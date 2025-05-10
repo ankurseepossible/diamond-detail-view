@@ -1,0 +1,33 @@
+{
+    "name": "DIA-Diamond-White-1",
+    "uuid": "8515627c-c6b8-45dc-bff3-161fa400b991",
+    "color": 16777215,
+    "envMapIntensity": 1,
+    "dispersion": 0.012,
+    "squashFactor": 0.98,
+    "geometryFactor": 0.5,
+    "gammaFactor": 1,
+    "absorptionFactor": 1,
+    "reflectivity": 0.5,
+    "refractiveIndex": 2.6,
+    "rayBounces": 5,
+    "diamondOrientedEnvMap": 0,
+    "boostFactors": {
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "isVector3": true
+    },
+    "transmission": 0,
+    "isDiamondMaterialParameters": true,
+    "type": "DiamondMaterial",
+    "userData": {
+        "separateEnvMapIntensity": true,
+        "uuid": "8515627c-c6b8-45dc-bff3-161fa400b991",
+        "names": [
+            "White Diamond",
+            "Diamond White",
+            "Diamond"
+        ]
+    }
+}
