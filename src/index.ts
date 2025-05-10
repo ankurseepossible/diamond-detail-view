@@ -1,22 +1,19 @@
 import {
-  ViewerApp,
-  DiamondPlugin,
-  GroundPlugin,
-  DiamondMaterial,
   addBasePlugins,
-  Vector3,
-  WireframeGeometry2,
-  LineMaterial,
-  LineSegments2,
-  Vector2,
-  AssetImporter,
-  Object3D,
-  Wireframe,
-  EdgesGeometry,
-  LineSegments,
-  LineBasicMaterial,
-  LineGeometry,
+  DiamondMaterial,
+  DiamondPlugin,
+  GroundPlugin, IMaterial,
+  ITexture,
+  Line,
   Line2,
+  LineGeometry,
+  LineMaterial,
+  LineSegments,
+  LineSegments2,
+  LineSegmentsGeometry,
+  Object3D,
+  Vector3,
+  ViewerApp,
 } from "webgi";
 import "./styles.css";
 
@@ -24,15 +21,16 @@ async function setupViewer() {
   // Initialize the viewer
   const viewer = new ViewerApp({
     canvas: document.getElementById("webgi-canvas") as HTMLCanvasElement,
+    useRgbm: false,
   });
 
   viewer.renderer.renderScale = Math.min(window.devicePixelRatio, 2);
 
-  // Add diamond plugin
-  await viewer.addPlugin(DiamondPlugin);
 
   // Add base plugins
   await addBasePlugins(viewer);
+  // Add diamond plugin
+  await viewer.addPlugin(DiamondPlugin);
 
   const diamondMat = new DiamondMaterial({
     name: "DIA-Diamond-White-1",
@@ -58,26 +56,68 @@ async function setupViewer() {
   });
 
   // Disable ground
-  const groundPlugin = viewer.getPluginByType(GroundPlugin);
+  const groundPlugin = viewer.getPlugin(GroundPlugin);
   if (groundPlugin) groundPlugin.visible = false;
 
   // Setup diamond plugin
   const diamondPlugin: DiamondPlugin | undefined =
     viewer.getPluginByType("Diamond");
   await viewer.getManager()?.importer?.importSinglePath("./GEM-immersive.hdr");
-  const diamondEnvMap = await viewer
-    .getManager()
-    ?.importer?.importSinglePath("./GEM-immersive.hdr");
+  const diamondEnvMap = await viewer.load<ITexture>("./GEM-immersive.hdr");
   diamondPlugin.envMap = diamondEnvMap;
-
-  const lineDiamondObject = await viewer
-    .getManager()
-    ?.importer?.importSinglePath("./line-diamond.glb");
-  // console.log("lineDiamondObject :::::::::::", lineDiamondObject)
 
   // Create wireframe group container
   const wireframeGroup = new Object3D();
   wireframeGroup.name = "WireframeContainer";
+
+  const lineDiamondObject = await viewer.load("./line-diamond.glb");
+  // Process wireframe from line diamond object
+
+  let lines: Line[] = []
+  let lineSeg: LineSegments[] = []
+  if (lineDiamondObject && lineDiamondObject.modelObject) {
+    lineDiamondObject.modelObject.traverse((lineObject: Line) => {
+      if (lineObject.type === "Line" && lineObject.geometry) {
+        lines.push(lineObject);
+      }
+      if (lineObject.type === "LineSegments" && lineObject.geometry) {
+        lineSeg.push(lineObject);
+      }
+    });
+  }
+  for (const lineObject of lines) {
+    console.log("Line ", lineObject);
+    const geom = new LineGeometry()
+    geom.setPositions(lineObject.geometry.attributes.position.array as any)
+    const line = new Line2(geom, wireframeMaterial)
+    line.position.copy(lineObject.position)
+    line.scale.copy(lineObject.scale)
+    line.quaternion.copy(lineObject.quaternion)
+    line.updateMatrixWorld(true)
+    line.computeLineDistances()
+    if(lineObject.parent) lineObject.parent.add(line);
+    else console.error('no parent')
+    lineObject.removeFromParent()
+    console.log(line)
+  }
+  for (const lineObject of lineSeg) {
+    console.log("Line ", lineObject);
+    const geom = new LineSegmentsGeometry()
+    geom.setPositions(lineObject.geometry.attributes.position.array as any)
+    const line = new LineSegments2(geom, wireframeMaterial)
+    line.position.copy(lineObject.position)
+    line.scale.copy(lineObject.scale)
+    line.quaternion.copy(lineObject.quaternion)
+    line.updateMatrixWorld(true)
+    line.computeLineDistances()
+    if(lineObject.parent) lineObject.parent.add(line);
+    else console.error('no parent')
+    lineObject.removeFromParent()
+    console.log(line)
+  }
+
+  // console.log("lineDiamondObject :::::::::::", lineDiamondObject)
+
   // Handle diamond model load
   viewer.scene.addEventListener("addSceneObject", async ({ object }) => {
     if (!object.modelObject) return;
@@ -99,76 +139,22 @@ async function setupViewer() {
       }
     });
 
-    // Process wireframe from line diamond object
-    if (lineDiamondObject && lineDiamondObject.modelObject) {
-      lineDiamondObject.modelObject.traverse((lineObject) => {
-        if (lineObject.type === "Line" && lineObject.geometry) {
-          console.log("Line ", lineObject);
-          lineObject.scale.x = 1.01;
-          lineObject.scale.y = 1.01;
-          lineObject.scale.z = 1.01;
-          const wireframe = createWireframeFromLineObject(lineObject);
-          wireframeGroup.add(wireframe);
-          // viewer.scene.addSceneObject(wireframe);
-        }
-      });
-    }
   });
-  // console.log("wireframeGroup :::::::", wireframeGroup)
-  const options = {
-    source: "wireframe-group",
-    autoScale: false,
-    autoCenter: true,
-  };
-  // const lineModels = await viewer.getManager().addImported(lineDiamondObject, options);
-  // viewer.scene.addSceneObject(lineModels.modelObject);
-
-  const wireframeModels = await viewer
-    .getManager()
-    .addImported(wireframeGroup, options);
-  viewer.scene.addSceneObject(wireframeModels.modelObject);
-
-  // viewer.scene.modelRoot.add(lineModels.modelObject);
 
   await viewer.setEnvironmentMap("./MTL-immersive.hdr");
   await viewer.load("./diamond.glb");
-
-  // const groundPlane = viewer.scene.children.find(o => o.name === 'Ground Plane');
-  // if (groundPlane) groundPlane.visible = false;
 
   viewer.scene.setDirty();
 }
 
 const wireframeMaterial = new LineMaterial({
-  color: 0x000000,
-  linewidth: 5,
+  color: '#ff2222' as any, //transparent: true, opacity: 0.9,
+  linewidth: 0.007, // in pixels
+  // resolution: new Vector2(1024, 1024), // to be set by renderer, eventually
   dashed: false,
-});
-window.addEventListener("resize", () => {
-  wireframeMaterial.resolution.set(window.innerWidth, window.innerHeight);
-});
-
-function createWireframeFromLineObject(lineObject) {
-  // const geometry = new LineGeometry();
-  // console.log(lineObject);
-
-  // geometry.setPositions([
-  //   lineObject.userData.attributes.geometry.pointAtStart[0], lineObject.userData.attributes.geometry.pointAtStart[1], lineObject.userData.attributes.geometry.pointAtStart[2],
-  //   lineObject.userData.attributes.geometry.pointAtEnd[0], lineObject.userData.attributes.geometry.pointAtEnd[1], lineObject.userData.attributes.geometry.pointAtEnd[2]
-  // ]);
-
-  // const line = new Line2(geometry, wireframeMaterial);
-  // line.computeLineDistances();
-  // line.scale.set(1, 1, 1);
-  // return line;
-
-  const wireframeGeometry = new WireframeGeometry2(lineObject.geometry);
-  const wireframe = new Wireframe(wireframeGeometry, wireframeMaterial);
-  wireframe.computeLineDistances();
-  return wireframe;
-
-  // const Line = new EdgesGeometry(lineObject.geometry);
-  // return new LineSegments(Line, wireframeMaterial);
-}
+  toneMapped: false,
+}) as LineMaterial & IMaterial
+wireframeMaterial.materialObject = wireframeMaterial
+wireframeMaterial.assetType = 'material'
 
 setupViewer();
