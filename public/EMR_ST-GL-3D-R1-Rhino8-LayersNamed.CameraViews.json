@@ -1,0 +1,293 @@
+{
+  "cameraViews": [
+    {
+      "position": {
+        "x": -1.3877787807814457e-17,
+        "y": 7.347881872828358e-15,
+        "z": 120,
+        "isVector3": true
+      },
+      "target": {
+        "x": -0.065,
+        "y": 0,
+        "z": 0,
+        "isVector3": true
+      },
+      "quaternion": {
+        "x": -3.0616168855825387e-17,
+        "y": 0.0002708333035346188,
+        "z": 8.29187845690436e-21,
+        "w": 0.9999999633246601,
+        "isQuaternion": true
+      },
+      "up": {
+        "x": -3.31675126111876e-20,
+        "y": 1,
+        "z": -6.12323309745003e-17,
+        "isVector3": true
+      },
+      "duration": 1,
+      "name": "girdleView",
+      "serializableClassId": "CameraView"
+    },
+    {
+      "position": {
+        "x": -1.3877787807814457e-17,
+        "y": 7.347881872828358e-15,
+        "z": 120,
+        "isVector3": true
+      },
+      "target": {
+        "x": -0.065,
+        "y": 0,
+        "z": 0,
+        "isVector3": true
+      },
+      "quaternion": {
+        "x": -3.0616168855825387e-17,
+        "y": 0.0002708333035346188,
+        "z": 8.29187845690436e-21,
+        "w": 0.9999999633246601,
+        "isQuaternion": true
+      },
+      "up": {
+        "x": -3.31675126111876e-20,
+        "y": 1,
+        "z": -6.12323309745003e-17,
+        "isVector3": true
+      },
+      "duration": 1,
+      "name": "pavilionHeightView",
+      "serializableClassId": "CameraView"
+    },
+    {
+      "position": {
+        "x": -0.06131615365026659,
+        "y": 175.103363534286,
+        "z": -0.14083499678612665,
+        "isVector3": true
+      },
+      "target": {
+        "x": -0.06131626367134287,
+        "y": 0.000002283040032326254,
+        "z": -0.14101018563685347,
+        "isVector3": true
+      },
+      "quaternion": {
+        "x": -0.7071063926391277,
+        "y": 0.00022203660849488192,
+        "z": 0.00022203638637457779,
+        "w": 0.7071071000127686,
+        "isQuaternion": true
+      },
+      "up": {
+        "x": -0.0006280140210665692,
+        "y": 0.0000010003774458811066,
+        "z": -0.9999998027986748,
+        "isVector3": true
+      },
+      "duration": 1,
+      "name": "crownFacetView",
+      "serializableClassId": "CameraView"
+    },
+    {
+      "position": {
+        "x": -1.3877787807814457e-17,
+        "y": 7.347881872828358e-15,
+        "z": 120,
+        "isVector3": true
+      },
+      "target": {
+        "x": -0.065,
+        "y": 0,
+        "z": 0,
+        "isVector3": true
+      },
+      "quaternion": {
+        "x": -3.0616168855825387e-17,
+        "y": 0.0002708333035346188,
+        "z": 8.29187845690436e-21,
+        "w": 0.9999999633246601,
+        "isQuaternion": true
+      },
+      "up": {
+        "x": -3.31675126111876e-20,
+        "y": 1,
+        "z": -6.12323309745003e-17,
+        "isVector3": true
+      },
+      "duration": 1,
+      "name": "initialView",
+      "serializableClassId": "CameraView"
+    },
+    {
+      "position": {
+        "x": 163.43549904565253,
+        "y": 0.26858546044570536,
+        "z": -0.3186522178068729,
+        "isVector3": true
+      },
+      "target": {
+        "x": 0,
+        "y": 0,
+        "z": -0.145,
+        "isVector3": true
+      },
+      "quaternion": {
+        "x": -0.0005807103718528272,
+        "y": 0.707482097213106,
+        "z": 0.0005813277115207091,
+        "w": 0.7067307881764465,
+        "isQuaternion": true
+      },
+      "up": {
+        "x": -0.0016433687670073627,
+        "y": 0.9999986496671117,
+        "z": 0.0000017460994259616653,
+        "isVector3": true
+      },
+      "duration": 1,
+      "name": "tableView",
+      "serializableClassId": "CameraView"
+    },
+    {
+      "position": {
+        "x": -1.3877787807814457e-17,
+        "y": 7.347881872828358e-15,
+        "z": 120,
+        "isVector3": true
+      },
+      "target": {
+        "x": -0.065,
+        "y": 0,
+        "z": 0,
+        "isVector3": true
+      },
+      "quaternion": {
+        "x": -3.0616168855825387e-17,
+        "y": 0.0002708333035346188,
+        "z": 8.29187845690436e-21,
+        "w": 0.9999999633246601,
+        "isQuaternion": true
+      },
+      "up": {
+        "x": -3.31675126111876e-20,
+        "y": 1,
+        "z": -6.12323309745003e-17,
+        "isVector3": true
+      },
+      "duration": 1,
+      "name": "crownHeightView",
+      "serializableClassId": "CameraView"
+    },
+    {
+      "position": {
+        "x": 160,
+        "y": 9.797178143658931e-15,
+        "z": 9.409140133698202e-15,
+        "isVector3": true
+      },
+      "target": {
+        "x": 0,
+        "y": 0,
+        "z": -0.14,
+        "isVector3": true
+      },
+      "quaternion": {
+        "x": -2.1658370725666655e-17,
+        "y": 0.7067973543863052,
+        "z": 2.163942794237515e-17,
+        "w": 0.7074160726422037,
+        "isQuaternion": true
+      },
+      "up": {
+        "x": -6.123231651687597e-17,
+        "y": 1,
+        "z": -5.357827695227222e-20,
+        "isVector3": true
+      },
+      "duration": 1,
+      "name": "depthView",
+      "serializableClassId": "CameraView"
+    },
+    {
+      "position": {
+        "x": -0.06500000000000447,
+        "y": -175.15323856392823,
+        "z": 0.5104905729316406,
+        "isVector3": true
+      },
+      "target": {
+        "x": -0.06277505749565995,
+        "y": -0.00035956910103320916,
+        "z": -0.14054979906267287,
+        "isVector3": true
+      },
+      "quaternion": {
+        "x": 0.7057903766097082,
+        "y": -0.001210513429641065,
+        "z": 0.0012060223071219418,
+        "w": 0.708418678785757,
+        "isQuaternion": true
+      },
+      "up": {
+        "x": -0.0034174749175899057,
+        "y": 0.003716979590641877,
+        "z": 0.9999872523827043,
+        "isVector3": true
+      },
+      "duration": 1,
+      "name": "pavilionFacetView",
+      "serializableClassId": "CameraView"
+    },
+    {
+      "position": {
+        "x": -0.06131615365026659,
+        "y": 175.103363534286,
+        "z": -0.14083499678612665,
+        "isVector3": true
+      },
+      "target": {
+        "x": -0.06131626367134287,
+        "y": 0.000002283040032326254,
+        "z": -0.14101018563685347,
+        "isVector3": true
+      },
+      "quaternion": {
+        "x": -0.7071063926391277,
+        "y": 0.00022203660849488192,
+        "z": 0.00022203638637457779,
+        "w": 0.7071071000127686,
+        "isQuaternion": true
+      },
+      "up": {
+        "x": -0.0006280140210665692,
+        "y": 0.0000010003774458811066,
+        "z": -0.9999998027986748,
+        "isVector3": true
+      },
+      "duration": 1,
+      "name": "ratioView",
+      "serializableClassId": "CameraView"
+    }
+  ],
+  "viewLooping": false,
+  "viewPauseTime": 200,
+  "animEase": "easeInOutSine",
+  "animDuration": 1000,
+  "rotationOffset": 0.25,
+  "interpolateMode": "spherical",
+  "splineCurve": "chordal",
+  "seekOnScroll": false,
+  "type": "CameraViews",
+  "resources": {
+    "geometries": {},
+    "materials": {},
+    "textures": {},
+    "images": {},
+    "shapes": {},
+    "skeletons": {},
+    "animations": {},
+    "extras": {}
+  }
+}
