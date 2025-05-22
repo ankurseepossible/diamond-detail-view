@@ -69,7 +69,7 @@ import {
   CameraUiPlugin,
   AssetManagerPlugin,
   CanvasSnipperPlugin,
-  ICameraControls, PopmotionPlugin,
+  ICameraControls, PopmotionPlugin, Object3DEventMap,
 } from "webgi";
 import "./styles.css";
 import * as THREE from 'three';
@@ -569,19 +569,19 @@ async function setupViewer() {
   viewer.scene.addEventListener("addSceneObject", async ({ object }) => {
     if (!object.modelObject) return;
     object.modelObject.traverse((model) => {
-      if (model.name.includes("gem")) {
+      if (model.name.includes("gem") && model.type === "Mesh") {
         console.log("model", model.name)
-        const cacheKey = model.children[0].name
+        const cacheKey = model.name
           .split("_")[0]
           .split("-")
           .splice(1, 10)
           .join("-");
-        diamondPlugin?.prepareDiamondMesh(model.children[0], {
+        diamondPlugin?.prepareDiamondMesh(model, {
           cacheKey,
           normalMapRes: 1024,
         });
-        model.children[0].setMaterial(diamondMat);
-        model.children[0].setDirty();
+        model.setMaterial(diamondMat);
+        model.setDirty();
       } else if (model.name.includes("line")) {
         console.log("line", model.name)
         model.material = LineStandardMaterial;
@@ -615,93 +615,6 @@ async function setupViewer() {
 
   focusCameraView(cameraViewPlugin!.camViews.find(view => view.name === 'initialView'))
 
-  // // await viewer.load("./lines-only-v1.glb");
-  // // Initialize annotation manager
-  // const annotationManager = new AnnotationManager(viewer);
-  // // Setup raycaster for point selection
-  // const raycaster = new THREE.Raycaster();
-  // const mouse = new Vector2();
-  //
-  // async function onClick(event: MouseEvent) {
-  //   // Early return if annotation mode is not active
-  //   if (!annotationManager.isActive()) return;
-  //   // actionButtonEvents.focusCameraView(event.viewName)
-  //   // viewer.scene.activeCamera.controls.enabled = false;
-  //   // return;
-  //
-  //   const bounds = viewer.canvas.getBoundingClientRect();
-  //   mouse.x = ((event.clientX - bounds.left) / viewer.canvas.clientWidth) * 2 - 1;
-  //   mouse.y = -((event.clientY - bounds.top) / viewer.canvas.clientHeight) * 2 + 1;
-  //
-  //   raycaster.setFromCamera(mouse, viewer.scene.activeCamera.cameraObject);
-  //   const intersects = raycaster.intersectObject(viewer.scene.modelRoot.modelObject, true);
-  //
-  //   if (intersects.length > 0) {
-  //     // Find first valid intersection with mesh_0 or any other valid object
-  //     for (const intersection of intersects) {
-  //       const { point, object } = intersection;
-  //       if (object.name.toLowerCase() == 'gem_1') {
-  //         console.log("==================annotationManager=====================");
-  //         // Convert THREE Vector3 to WebGI Vector3
-  //         const position = new Vector3(point.x, point.y, point.z);
-  //         console.log(object.name, point);
-  //         // Add the annotation point
-  //         annotationManager.addAnnotationPoint(position);
-  //         const newSphere = sphere.clone();
-  //
-  //         createStoryPoint(viewer, newSphere, point);
-  //         break;
-  //       }
-  //     }
-  //   }
-  // }
-  //
-  // viewer.canvas.addEventListener('click', onClick);
-  // viewer.canvas.addEventListener('click', (event) => {
-  //   if (!listeningForNewPoint) {
-  //     return;
-  //   }
-  //   const actionButtonEvents = bindActionButtonEvents(viewer);
-  //   console.log("actionButtonEvents", actionButtonEvents);
-  //   // if (!event.shiftKey) {
-  //   //     return;
-  //   // }
-  //
-  //   const bounds = viewer.canvas.getBoundingClientRect()
-  //   mouse.x = ((event.clientX - bounds.left) / viewer.canvas.clientWidth) * 2 - 1;
-  //   mouse.y = -((event.clientY - bounds.top) / viewer.canvas.clientHeight) * 2 + 1;
-  //   raycaster.setFromCamera(mouse, viewer.scene.activeCamera.cameraObject);
-  //   const intersects = raycaster.intersectObject(viewer.scene.modelRoot.modelObject, true);
-  //   if (intersects.length > 0) {
-  //     intersects.every(({ point, object }) => {
-  //       if (!object.name.toLowerCase().includes('hand')) {
-  //         // console.log(point);
-  //
-  //         const newSphere = sphere.clone();
-  //         createStoryPoint(viewer, newSphere, point);
-  //
-  //         stopListening();
-  //
-  //         window.parent.postMessage({
-  //           action: 'CreateStoryPointDone',
-  //           from:   'Child',
-  //           uuid:   newSphere.uuid,
-  //           coords: point,
-  //           save:   true
-  //         }, '*');
-  //
-  //         return false;
-  //       }
-  //       return true;
-  //     });
-  //   }
-  // }, false);
-  // const orthographicCam = new OrthographicCamera(-5, 5, 5, -5, 1, 1000);
-  // orthographicCam.position.set(0,0, 20);
-  // console.log("orthographicCam", orthographicCam)
-  // viewer.scene.activeCamera = viewer.createCamera(orthographicCam);
-
-  // viewer.scene.activeCamera.cameraObject.add()
   viewer.scene.setDirty();
 
 
@@ -723,15 +636,58 @@ async function getSphereObject(viewer: ViewerApp): Promise<any> {
   return sphere;
 }
 
-const annotationItems: { model: Object3D<Event>; annotationElement: Element; }[] = [];
+const annotationItems: { model: Object3D<Object3DEventMap>; annotationElement: Element; }[] = [];
 
-function createStoryPoint(viewer: ViewerApp, newSphere, point, story = {}, focusView = () => {
-}) {
+function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story = {}, focusView: any) {
   viewer.scene.addSceneObject(newSphere);
   newSphere.position.set(point.x, point.y, point.z);
+  viewer.scene.setDirty();
 
   const annotationElement = getNewAnnotation(newSphere.uuid, story);
+  const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
+  const closeButton = document.querySelector('.close-button');
+
+  // Close button event - enable controls and go back to initial view
+  closeButton!.addEventListener('click', () => {
+    console.log("Close button clicked - enabling camera controls");
+    showAllAnnotations();
+    // Enable camera controls
+    const cameraControls = viewer.scene.activeCamera.controls;
+    if (cameraControls) {
+      cameraControls.enabled = true;
+    }
+    viewer.scene.setDirty();
+
+    // Focus back to initial view
+    const initialView = cameraViewPlugin!.camViews.find(view => view.name === 'initialView');
+    focusView(initialView);
+
+    // Hide close button
+    closeButton!.style.display = 'none';
+
+    // Reset all models to default visibility
+    viewer.scene.modelRoot.traverse((object: Object3D<Object3DEventMap>) => {
+      object.modelObject.traverse((model: Object3D) => {
+        if (model.type === "Mesh") {
+          if (model.name.includes('gem')) {
+            return; // Keep gems visible
+          }
+          if (model.name.includes("line")) {
+            model.material = LineStandardMaterial;
+            model.visible = true;
+          } else {
+            model.visible = false;
+          }
+        }
+      });
+    });
+    viewer.scene.setDirty();
+  });
+
+  // Annotation content click event - focus to target view and lock camera
   annotationElement?.querySelector('.annotation-content').addEventListener('click', (evt: MouseEvent) => {
+    console.log("Annotation content clicked - disabling camera controls");
+
     let target = evt.target;
     if (!evt.target?.dataset?.viewname) {
       for (let elem of evt.path) {
@@ -741,36 +697,84 @@ function createStoryPoint(viewer: ViewerApp, newSphere, point, story = {}, focus
         }
       }
     }
-    const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
-    // console.log(cameraViewPlugin!.camViews)
-    focusView(cameraViewPlugin!.camViews.find(view => view.name == target.dataset.viewname))
-    viewer.scene.modelRoot.traverse(async (object) => {
-      object.modelObject.traverse((model) => {
-        if (model.name.includes(target?.dataset.viewname) && model.type === "Mesh") {
-          console.log(" model.name ", target?.dataset.viewname);
-          model.material = LineStandardMaterial;
-          model.visible = true;
-        } else if (target?.dataset.viewname === "pavilionFacetView" || target?.dataset.viewname === "crownFacetView") {
-          console.log("pavilionFacetView", model.name);
-          if (model.type === "Mesh" && model.name.includes("line")) {
-            model.material = LineStandardMaterial;
-            model.visible = true;
-          } else if (model.type === "Mesh" && !model.name.includes("line") && !model.name.includes('gem')) {
-            model.visible = false;
+
+    const targetViewName = cameraViewPlugin!.camViews.find(view => view.name == target?.dataset.viewname);
+    hideOtherAnnotations(target?.dataset.viewname);
+    // Show close button immediately
+    closeButton!.style.display = 'block';
+
+    // Focus to the target view first
+    focusView(targetViewName);
+
+    // Get animation duration and disable controls after a short delay to allow focus to complete
+    const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
+    const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
+
+    // Disable controls after the camera animation starts but give it a moment
+    setTimeout(() => {
+      const cameraControls = viewer.scene.activeCamera.controls;
+      if (cameraControls) {
+        cameraControls.enabled = false;
+        cameraControls.autoRotate = false;
+      }
+      viewer.scene.setDirty();
+    }); // Small delay to let focus animation start
+
+    // Handle model visibility after camera animation completes
+    viewer.scene.modelRoot.traverse(async (object: Object3D<Object3DEventMap>) => {
+      const targetViewNameStr = target?.dataset.viewname;
+
+      setTimeout(() => {
+        object.modelObject.traverse((model: Object3D) => {
+          if (model.type === "Mesh") {
+            if (model.name.includes('gem')) {
+              return; // Keep gems visible
+            }
+
+            const isFacetView = targetViewNameStr === "pavilionFacetView" || targetViewNameStr === "crownFacetView";
+
+            if (model.name.includes(targetViewNameStr)) {
+              model.material = LineStandardMaterial;
+              model.visible = true;
+            } else if (isFacetView && model.name.includes("line")) {
+              model.material = LineStandardMaterial;
+              model.visible = true;
+            } else if (model.name.includes("line")) {
+              model.material = disableLineStandardMaterial;
+              model.visible = true;
+            } else {
+              model.visible = false;
+            }
           }
-        } else if (model.type === "Mesh" && !model.name.includes('gem')) {
-          if (model.name.includes("line")) {
-            model.material = disableLineStandardMaterial;
-          } else {
-            model.visible = false;
-          }
+        });
+
+        // Ensure camera controls remain disabled after model updates
+        const cameraControls = viewer.scene.activeCamera.controls;
+        if (cameraControls) {
+          cameraControls.enabled = false;
+          cameraControls.autoRotate = false;
         }
-      })
-    })
-  })
+        viewer.scene.setDirty();
+        console.log("Models updated and camera controls re-disabled");
+      }, actualAnimationDuration); // Add small buffer after animation
+    });
+
+    // Additional safety measure - disable controls periodically until close is clicked
+    const lockInterval = setInterval(() => {
+      const cameraControls = viewer.scene.activeCamera.controls;
+      if (cameraControls && cameraControls.enabled) {
+        cameraControls.enabled = false;
+        cameraControls.autoRotate = false;
+        console.log("Re-disabled camera controls (safety measure)");
+      }
+    });
+
+    // Store interval to clear it when close button is clicked
+    closeButton!.dataset.lockInterval = lockInterval.toString();
+  });
+
   const annotationContainer = document.querySelector('.annotation-container');
-  if (annotationContainer) {
-    // console.log("annotationContainer", annotationContainer);
+  if (annotationContainer && annotationElement) {
     annotationContainer.appendChild(annotationElement);
     updateNewStoryScreenPosition(viewer, annotationElement, point);
     annotationItems.push({ model: newSphere, annotationElement });
@@ -778,6 +782,35 @@ function createStoryPoint(viewer: ViewerApp, newSphere, point, story = {}, focus
       updateNewStoryScreenPosition(viewer, annotationElement, point);
     });
   }
+}
+
+// Functions to hide/show annotation labels
+function hideOtherAnnotations(activeViewName: string) {
+  const allAnnotations = document.querySelectorAll('.annotation-container .annotation');
+  allAnnotations.forEach((annotation: HTMLElement) => {
+    if (annotation.dataset.viewname !== activeViewName) {
+      annotation.style.display = 'none';
+      // Also hide the corresponding 3D sphere
+      const sphereId = annotation.id;
+      const correspondingSphere = annotationItems.find(item => item.annotationElement.id === sphereId);
+      if (correspondingSphere) {
+        correspondingSphere.model.visible = false;
+      }
+    }
+  });
+}
+
+function showAllAnnotations() {
+  const allAnnotations = document.querySelectorAll('.annotation-container .annotation');
+  allAnnotations.forEach((annotation: HTMLElement) => {
+    annotation.style.display = 'block';
+    // Also show the corresponding 3D sphere
+    const sphereId = annotation.id;
+    const correspondingSphere = annotationItems.find(item => item.annotationElement.id === sphereId);
+    if (correspondingSphere) {
+      correspondingSphere.model.visible = true;
+    }
+  });
 }
 
 let timeOutNewStory: number | undefined;
@@ -874,20 +907,6 @@ async function animateObject(viewer: ViewerApp, popMotion: PopmotionPlugin, obje
   }
 }
 
-async function getCachedAssetData(viewer: ViewerApp, fileNameEndWith: string) {
-  const assetManagerPlugin = viewer.getPlugin(AssetManagerPlugin);
-  // @ts-ignore
-  const assetData = await assetManagerPlugin.importer.cachedAssets.filter(
-    (ast: any) => ast.path.split("?")[0].endsWith(fileNameEndWith)
-  );
-  if (assetData!.length) {
-    return assetData[0].preImported;
-  }
-  return null;
-}
-
-let cameraViews: { [key: string]: any } = {};
-
 async function bindActionButtonEvents(viewer: ViewerApp) {
   let cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
   if (cameraViewPlugin!.camViews.length > 1) {
@@ -923,7 +942,6 @@ async function bindActionButtonEvents(viewer: ViewerApp) {
     }
 
     viewToFocus?.focusView();
-
     viewer.scene.modelObject.traverse((model) => {
       if (model.type === 'Object3D' && model.name && model.userData.name) {
         rootModel = model;
