@@ -1042,6 +1042,7 @@ if (!("path" in PointerEvent.prototype)) {
 function bindIFrameEvents(viewer: ViewerApp) {
   window.addEventListener('message', async (event) => {
     let eventData: any = event.data;
+    console.log("Received event data", eventData);
 
     switch (eventData?.action) {
       case 'DIA_LOAD_DESIGN':
