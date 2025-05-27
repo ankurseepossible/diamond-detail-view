@@ -10,6 +10,19 @@
 <body>
 	<div id="webgi-canvas-container">
 		<canvas id="webgi-canvas"></canvas>
+
+		<div class="annotation-toggle">
+			<span class="toggle-label" id="annotationLabel">Annotations</span>
+			<div class="toggle-switch" id="annotationToggle">
+				<div class="toggle-slider"></div>
+			</div>
+			<span class="toggle-label" id="rotationLabel">360° Rotation</span>
+			<div class="toggle-switch" id="rotationSwitch">
+				<div class="toggle-slider"></div>
+			</div>
+		</div>
+
+
 		<div class="annotation draft">
 			<div class="annotation-content">
 				<p class="name"></p>
@@ -20,6 +33,78 @@
 	</div>
 
 	<script src="src/index.ts" type="module"></script>
+	<script type="module">
+		// Auto Rotate Toggle Functionality
+		let isAnnotationEnabled = true; // Default state
+		let isRotationEnabled = true;
+
+		const toggleSwitch = document.getElementById('annotationToggle');
+		const rotationToggleSwitch = document.getElementById('rotationSwitch');
+
+		// Set initial state
+		if (isAnnotationEnabled) {
+			toggleSwitch.classList.add('active');
+			rotationToggleSwitch.style.display = 'none';
+			document.getElementById('rotationLabel').style.display = 'none';
+			rotationToggleSwitch.classList.remove('active');
+		}
+
+		if (isRotationEnabled) {
+			rotationToggleSwitch.classList.add('active');
+		}
+
+		// Toggle functionality
+		toggleSwitch.addEventListener('click', () => {
+			isAnnotationEnabled = !isAnnotationEnabled;
+			toggleSwitch.classList.toggle('active');
+			if (isAnnotationEnabled) {
+				document.getElementById('rotationLabel').style.display = 'none';
+				rotationToggleSwitch.style.display = 'none';
+			} else {
+				document.getElementById('rotationLabel').style.display = 'block';
+				rotationToggleSwitch.style.display = 'block';
+				// rotationToggleSwitch.classList.add('active');
+			}
+
+			// Dispatch custom event that your main code can listen to
+			window.dispatchEvent(new CustomEvent('annotationToggle', {
+				detail: { enabled: isAnnotationEnabled }
+			}));
+
+			console.log('Auto rotate toggled:', isAnnotationEnabled);
+		});
+
+		rotationToggleSwitch.addEventListener('click', () => {
+			isRotationEnabled = !isRotationEnabled;
+			rotationToggleSwitch.classList.toggle('active');
+			window.dispatchEvent(new CustomEvent('rotationSwitch', {
+				detail: { enabled: isRotationEnabled }
+			}));
+
+			console.log('Rotation toggled:', isRotationEnabled);
+		})
+
+		// Make the state accessible globally
+		window.getAnnotationState = () => isAnnotationEnabled;
+		window.setAnnotationState = (state) => {
+			isAnnotationEnabled = state;
+			if (state) {
+				toggleSwitch.classList.add('active');
+			} else {
+				toggleSwitch.classList.remove('active');
+			}
+		};
+
+		window.getRotationState = () => isRotationEnabled;
+		window.setRotationState = (state) => {
+			isRotationEnabled = state;
+			if (state) {
+				rotationToggleSwitch.classList.add('active');
+			} else {
+				rotationToggleSwitch.classList.remove('active');
+			}
+		};
+	</script>
 </body>
 
 </html>

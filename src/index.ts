@@ -36,11 +36,8 @@ import {
   GLTFKHRMaterialVariantsPlugin,
   GLTFMeshOptPlugin,
   GammaCorrectionPlugin,
-  InteractionPromptPlugin,
   KTX2LoadPlugin,
   LUTPlugin,
-  LayeredMaterialPlugin,
-  ModelStagePlugin,
   NoiseBumpMaterialPlugin,
   NormalBufferPlugin,
   ObjMtlLoadPlugin,
@@ -69,17 +66,20 @@ import {
   CameraUiPlugin,
   AssetManagerPlugin,
   CanvasSnipperPlugin,
-  ICameraControls, PopmotionPlugin, Object3DEventMap,
+  ICameraControls, PopmotionPlugin, Cache, PresetLibraryPlugin, PluginPresetGroup, ITexture, Color,
 } from "webgi";
 import "./styles.css";
 import * as THREE from 'three';
 import { func, or } from "three/examples/jsm/nodes/shadernode/ShaderNodeBaseElements";
+import get = Cache.get;
 
 // Interface for storing annotation points
 interface AnnotationPoint {
   position: Vector3;
   name: string;
 }
+
+let lineMaterialColor, disableLineMaterialColor;
 
 // Class to manage annotation functionality
 class AnnotationManager {
@@ -456,7 +456,7 @@ const stories = [
     "key":      "crownHeightView",
     "position": {
       "x": 0.07933897335510723,
-      "y": 0.32066156403552537,
+      "y": 0.44066156403552537,
       "z": 1.165096879999456
     }
   },
@@ -514,11 +514,8 @@ async function setupViewer() {
   await viewer.addPlugin(GLTFKHRMaterialVariantsPlugin)
   // // await viewer.addPlugin(GLTFMeshOptPlugin)
   await viewer.addPlugin(GammaCorrectionPlugin)
-  await viewer.addPlugin(InteractionPromptPlugin)
   await viewer.addPlugin(KTX2LoadPlugin)
   await viewer.addPlugin(LUTPlugin)
-  await viewer.addPlugin(LayeredMaterialPlugin)
-  await viewer.addPlugin(ModelStagePlugin)
   await viewer.addPlugin(NoiseBumpMaterialPlugin)
   await viewer.addPlugin(NormalBufferPlugin)
   await viewer.addPlugin(ObjMtlLoadPlugin)
@@ -562,9 +559,24 @@ async function setupViewer() {
       names:                   [ "White Diamond", "Diamond White", "Diamond" ],
     },
   });
-  const diamondPlugin: DiamondPlugin | undefined = viewer.getPluginByType("Diamond");
-  const diamondEnvMap = await viewer.getManager()?.importer?.importSinglePath("./GEM-immersive.hdr");
-  diamondPlugin.envMap = diamondEnvMap;
+  const lineObjects = [];
+
+  function updateLineVisibility(isVisible) {
+    lineObjects.forEach(lineObj => {
+      lineObj.visible = isVisible;
+      lineObj.setDirty();
+    });
+    viewer.scene.setDirty();
+  }
+
+
+  const DiaManager = viewer.getPlugin(AssetManagerPlugin);
+  const diamondEnvMap: ITexture | undefined = await DiaManager!.importer!.importSinglePath<ITexture>("./GEM-immersive.hdr");
+  const diamondPlugin: DiamondPlugin | undefined = viewer.getPluginByType('Diamond');
+  // @ts-ignore
+  diamondPlugin!.envMap = diamondEnvMap;
+  diamondPlugin!.envMapRotation = 3.3;
+  console.log("diamondPlugin :::::::::::::::::::", diamondPlugin)
 
   viewer.scene.addEventListener("addSceneObject", async ({ object }) => {
     if (!object.modelObject) return;
@@ -586,43 +598,69 @@ async function setupViewer() {
         console.log("line", model.name)
         model.material = LineStandardMaterial;
         model.setDirty();
+        lineObjects.push(model);
       } else if (model.type === "Mesh") {
         model.visible = false;
         console.log("Model", model.name, ":: ", model)
       }
     });
   });
-  await viewer.load("./EMR_ST-GL-3D-R7-Rhino8-LayersNamed.glb");
-  const manager = viewer.getPlugin(AssetManagerPlugin);
-  await manager!.addFromPath(`EMR_ST-GL-3D-R1-Rhino8-LayersNamed.CameraViews.json?v=1`);
+
+  const normalViewDistance = { min: 7, max: 12 };
   const cameraOptions = viewer.scene.activeCamera.getCameraOptions();
   cameraOptions.fov = 1;
-  viewer.scene.activeCamera.setCameraOptions(cameraOptions);
-  viewer.scene.setDirty();
+  const CamControls: ICameraControls | undefined = viewer.scene.activeCamera.controls;
+  CamControls!.enableZoom = false;
 
-  await viewer.setEnvironmentMap("./MTL-immersive.hdr");
+  CamControls!.minDistance = normalViewDistance.min;
+  CamControls!.maxDistance = normalViewDistance.max;
+  viewer.scene.activeCamera.setCameraOptions(cameraOptions);
   const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
   const sphere = await getSphereObject(viewer);
-  const pointerPlugin = viewer.getPlugin(
-    InteractionPromptPlugin as any
-  ) as unknown as InteractionPromptPlugin;
-  console.log("pointerPlugin", pointerPlugin);
-  if (pointerPlugin) {
-    pointerPlugin.enabled = false;
+  let rotationSwitchState = true;
+  let annotationsEnabled = true;
+  const cameraControls = viewer.scene.activeCamera.controls;
+
+  function updateRotation() {
+    const shouldRotate = !annotationsEnabled && rotationSwitchState;
+
+    cameraControls!.autoRotate = shouldRotate;
+    console.log('Rotation updated:', {
+      annotationsEnabled,
+      rotationSwitchState,
+      finalRotation: shouldRotate
+    });
   }
 
-  const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
+  window.addEventListener("rotationSwitch", (event) => {
+    rotationSwitchState = event.detail.enabled;
+    console.log('Rotation switch changed to:', rotationSwitchState);
+    updateRotation();
+  });
 
-  focusCameraView(cameraViewPlugin!.camViews.find(view => view.name === 'initialView'))
+  window.addEventListener('annotationToggle', async (event) => {
+    annotationsEnabled = event.detail.enabled;
+    console.log('Annotations changed to:', annotationsEnabled);
 
-  viewer.scene.setDirty();
+    updateLineVisibility(annotationsEnabled);
 
+    if (!annotationsEnabled) {
+      hideOtherAnnotations();
+    } else {
+      showAllAnnotations();
+    }
+
+    updateRotation();
+  });
 
   stories.forEach(story => {
     const newSphere = sphere.clone();
     const position = new Vector3(story.position.x, story.position.y, story.position.z);
     createStoryPoint(viewer, newSphere, position, story, focusCameraView)
-  })
+  });
+
+  viewer.scene.setDirty();
+  bindIFrameEvents(viewer);
 }
 
 async function getSphereObject(viewer: ViewerApp): Promise<any> {
@@ -636,9 +674,9 @@ async function getSphereObject(viewer: ViewerApp): Promise<any> {
   return sphere;
 }
 
-const annotationItems: { model: Object3D<Object3DEventMap>; annotationElement: Element; }[] = [];
+const annotationItems: { model: Object3D; annotationElement: Element; }[] = [];
 
-function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story = {}, focusView: any) {
+function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story = {}, focusView: any, annotationIsEnable: boolean = true) {
   viewer.scene.addSceneObject(newSphere);
   newSphere.position.set(point.x, point.y, point.z);
   viewer.scene.setDirty();
@@ -646,27 +684,34 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
   const annotationElement = getNewAnnotation(newSphere.uuid, story);
   const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
   const closeButton = document.querySelector('.close-button');
+  const annotationToggleContainer = document.querySelector('.annotation-toggle');
 
-  // Close button event - enable controls and go back to initial view
   closeButton!.addEventListener('click', () => {
     console.log("Close button clicked - enabling camera controls");
-    showAllAnnotations();
-    // Enable camera controls
-    const cameraControls = viewer.scene.activeCamera.controls;
-    if (cameraControls) {
-      cameraControls.enabled = true;
-    }
-    viewer.scene.setDirty();
 
-    // Focus back to initial view
-    const initialView = cameraViewPlugin!.camViews.find(view => view.name === 'initialView');
-    focusView(initialView);
+    setTimeout(() => {
+      const cameraControls = viewer.scene.activeCamera.controls;
+      if (cameraControls) {
+        cameraControls.enabled = false;
+        cameraControls.autoRotate = false;
+      }
+      viewer.scene.setDirty();
+    }, 1100);
 
-    // Hide close button
+    setTimeout(() => {
+      const initialView = cameraViewPlugin!.camViews.find(view => view.name === 'initialView');
+      focusView(initialView);
+    }, 100);
+    setTimeout(() => {
+      console.log("ShowAllANNOTATION");
+      showAllAnnotations()
+      if (annotationToggleContainer) {
+        annotationToggleContainer.style.display = 'flex';
+      }
+    }, 3000)
     closeButton!.style.display = 'none';
 
-    // Reset all models to default visibility
-    viewer.scene.modelRoot.traverse((object: Object3D<Object3DEventMap>) => {
+    viewer.scene.modelRoot.traverse((object: Object3D) => {
       object.modelObject.traverse((model: Object3D) => {
         if (model.type === "Mesh") {
           if (model.name.includes('gem')) {
@@ -684,9 +729,13 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
     viewer.scene.setDirty();
   });
 
-  // Annotation content click event - focus to target view and lock camera
+  // @ts-ignore
   annotationElement?.querySelector('.annotation-content').addEventListener('click', (evt: MouseEvent) => {
     console.log("Annotation content clicked - disabling camera controls");
+
+    if (annotationToggleContainer) {
+      annotationToggleContainer.style.display = 'none';
+    }
 
     let target = evt.target;
     if (!evt.target?.dataset?.viewname) {
@@ -698,37 +747,37 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
       }
     }
 
-    const targetViewName = cameraViewPlugin!.camViews.find(view => view.name == target?.dataset.viewname);
-    hideOtherAnnotations(target?.dataset.viewname);
-    // Show close button immediately
+    setTimeout(() => {
+      const cameraControls = viewer.scene.activeCamera.controls;
+      cameraControls!.enabled = false;
+    }, 1100)
+    const targetViewName = cameraViewPlugin!.camViews.find(view => view.name === target?.dataset.viewname);
+    hideOtherAnnotations();
     closeButton!.style.display = 'block';
-
-    // Focus to the target view first
     focusView(targetViewName);
+    console.log("cameraViewPlugin!.camViews ::::::::::::::::", cameraViewPlugin!.camViews)
+    console.log("targetViewName ::::::::::", target?.dataset.viewname);
 
-    // Get animation duration and disable controls after a short delay to allow focus to complete
     const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
     const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
 
-    // Disable controls after the camera animation starts but give it a moment
     setTimeout(() => {
       const cameraControls = viewer.scene.activeCamera.controls;
       if (cameraControls) {
-        cameraControls.enabled = false;
         cameraControls.autoRotate = false;
+        cameraControls.enabled = false;
       }
       viewer.scene.setDirty();
-    }); // Small delay to let focus animation start
+    }, actualAnimationDuration);
 
-    // Handle model visibility after camera animation completes
-    viewer.scene.modelRoot.traverse(async (object: Object3D<Object3DEventMap>) => {
+    viewer.scene.modelRoot.traverse(async (object: Object3D) => {
       const targetViewNameStr = target?.dataset.viewname;
 
       setTimeout(() => {
         object.modelObject.traverse((model: Object3D) => {
           if (model.type === "Mesh") {
             if (model.name.includes('gem')) {
-              return; // Keep gems visible
+              return;
             }
 
             const isFacetView = targetViewNameStr === "pavilionFacetView" || targetViewNameStr === "crownFacetView";
@@ -748,29 +797,14 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
           }
         });
 
-        // Ensure camera controls remain disabled after model updates
         const cameraControls = viewer.scene.activeCamera.controls;
         if (cameraControls) {
           cameraControls.enabled = false;
-          cameraControls.autoRotate = false;
         }
         viewer.scene.setDirty();
         console.log("Models updated and camera controls re-disabled");
-      }, actualAnimationDuration); // Add small buffer after animation
+      }, actualAnimationDuration + 100);
     });
-
-    // Additional safety measure - disable controls periodically until close is clicked
-    const lockInterval = setInterval(() => {
-      const cameraControls = viewer.scene.activeCamera.controls;
-      if (cameraControls && cameraControls.enabled) {
-        cameraControls.enabled = false;
-        cameraControls.autoRotate = false;
-        console.log("Re-disabled camera controls (safety measure)");
-      }
-    });
-
-    // Store interval to clear it when close button is clicked
-    closeButton!.dataset.lockInterval = lockInterval.toString();
   });
 
   const annotationContainer = document.querySelector('.annotation-container');
@@ -785,26 +819,25 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
 }
 
 // Functions to hide/show annotation labels
-function hideOtherAnnotations(activeViewName: string) {
+function hideOtherAnnotations() {
   const allAnnotations = document.querySelectorAll('.annotation-container .annotation');
+  // @ts-ignore
   allAnnotations.forEach((annotation: HTMLElement) => {
-    if (annotation.dataset.viewname !== activeViewName) {
-      annotation.style.display = 'none';
-      // Also hide the corresponding 3D sphere
-      const sphereId = annotation.id;
-      const correspondingSphere = annotationItems.find(item => item.annotationElement.id === sphereId);
-      if (correspondingSphere) {
-        correspondingSphere.model.visible = false;
-      }
+    annotation.style.display = 'none';
+    // Also hide the corresponding 3D sphere
+    const sphereId = annotation.id;
+    const correspondingSphere = annotationItems.find(item => item.annotationElement.id === sphereId);
+    if (correspondingSphere) {
+      correspondingSphere.model.visible = false;
     }
   });
 }
 
 function showAllAnnotations() {
   const allAnnotations = document.querySelectorAll('.annotation-container .annotation');
+  // @ts-ignore
   allAnnotations.forEach((annotation: HTMLElement) => {
     annotation.style.display = 'block';
-    // Also show the corresponding 3D sphere
     const sphereId = annotation.id;
     const correspondingSphere = annotationItems.find(item => item.annotationElement.id === sphereId);
     if (correspondingSphere) {
@@ -828,9 +861,6 @@ function updateNewStoryScreenPosition(viewer: ViewerApp, annotationElement: HTML
   if (timeOutNewStory) {
     clearTimeout(timeOutNewStory);
   }
-  timeOutNewStory = setTimeout((annotationItems) => {
-    // updateAnnotationOpacity(viewer, annotationItems)
-  }, 100, annotationItems, point);
 }
 
 function getNewAnnotation(id: number | string, story = {}) {
@@ -848,6 +878,7 @@ function getNewAnnotation(id: number | string, story = {}) {
     return;
   }
 
+  // @ts-ignore
   annotationElement.id = id;
   annotationElement.classList.add(`item-${id}`);
   annotationElement.classList.remove('hide');
@@ -864,17 +895,8 @@ function getNewAnnotation(id: number | string, story = {}) {
   return annotationElement;
 }
 
-const LineStandardMaterial = new MeshStandardMaterial({ color: 0x000000, flatShading: true });
-const disableLineStandardMaterial = new MeshStandardMaterial({ color: 0x757575, flatShading: true });
-
-const wireframeMaterial = new LineMaterial({
-  color:      '#000000' as any, //transparent: true, opacity: 0.9,
-  linewidth:  0.0011, // in pixels
-  dashed:     false,
-  toneMapped: false,
-}) as LineMaterial & IMaterial
-wireframeMaterial.materialObject = wireframeMaterial
-wireframeMaterial.assetType = 'material';
+const LineStandardMaterial = new MeshStandardMaterial({ flatShading: true });
+const disableLineStandardMaterial = new MeshStandardMaterial({ flatShading: true });
 
 function inIframe() {
   try {
@@ -882,6 +904,10 @@ function inIframe() {
   } catch (e) {
     return true;
   }
+}
+
+function isLocalhost(): boolean {
+  return location.hostname === "localhost" || location.hostname === "127.0.0.1";
 }
 
 async function animateObject(viewer: ViewerApp, popMotion: PopmotionPlugin, object: Object3D, targetPosition: Vector3, animationEase: string = EasingFunctions.circOut, duration: number = 2000) {
@@ -1001,4 +1027,71 @@ if (!("path" in PointerEvent.prototype)) {
       return path;
     }
   });
+}
+
+function bindIFrameEvents(viewer: ViewerApp) {
+  window.addEventListener('message', async (event) => {
+    let eventData: any = event.data;
+    console.log("===============", eventData)
+
+    switch (eventData?.action) {
+      case 'HandshakeReturn':
+        console.log('iFrame:::::::::::::::::::::::::::::: ' + eventData + ' Done');
+        if (eventData.source) {
+          viewer.scene.userData.frameSource = eventData.source;
+        }
+        if (eventData.client_id) {
+          // To use client id for loading only client specific materials
+          viewer.scene.userData.clientId = eventData.client_id;
+
+          let clientDefinedEvent = new CustomEvent('ClientDefinedInternal', {
+            detail: {
+              clientId: eventData.client_id
+            }
+          });
+          window.dispatchEvent(clientDefinedEvent);
+        }
+        break;
+      case 'LoadDesign':
+        // await viewer.load(eventData.value);
+        LineStandardMaterial.color = new Color(eventData.activeLineColor);
+        disableLineStandardMaterial.color = new Color(eventData.deactivatedLineColor);
+        switch (eventData.shape) {
+          case 'emerald' :
+            await viewer.load("EMR_ST-GL-Dimensions-Rhino8GLB-Export-Ready-R1.glb");
+            await viewer.setEnvironmentMap("./MTL-immersive.hdr");
+            break;
+          case 'round':
+            await viewer.load("RND_BC-HD-Dimensions-Rhino8GLB-Export-Ready-R1.glb");
+            break;
+
+          case 'oval':
+            await viewer.load("OVA_BC-HD-Dimensions-Rhino8GLB-Export-Ready-R1.glb");
+            break;
+          default:
+        }
+        const manager = viewer.getPlugin(AssetManagerPlugin);
+        await manager!.addFromPath(`EMR_ST-GL-3D-R1-Rhino8-LayersNamed.CameraViews.json?v=1`);
+        const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
+        const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
+        await focusCameraView(cameraViewPlugin!.camViews.find(view => view.name === 'initialView'));
+        viewer.scene.backgroundColor = eventData.canvasBackgroundColor;
+        break;
+      default:
+    }
+  });
+  window.parent.postMessage({
+    action: 'Handshake',
+    from:   'Child'
+  }, '*');
+
+  if (!inIframe() && isLocalhost()) {
+    // To load webflow materials on local
+    window.postMessage({
+      action: "HandshakeReturn",
+      // bgColor: '000000',
+      client_id: 'caratwise'
+    }, '*');
+  }
+
 }
