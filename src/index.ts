@@ -683,6 +683,20 @@ async function showAnnotationDetail(viewer: ViewerApp, target: any, focusView: a
   const targetViewName = cameraViewPlugin!.camViews.find(view => view.name === target);
   hideOtherAnnotations();
   closeButton!.style.display = 'block';
+
+  viewer.scene.modelRoot.traverse(async (object: Object3D) => {
+    object.modelObject.traverse((model: Object3D) => {
+      if (model.type === "Mesh") {
+        if (model.name.includes('gem')) {
+          return;
+        }
+        if (!model.name.includes(target)) {
+          model.visible = false;
+        }
+      }
+    });
+  });
+
   focusView(targetViewName);
 
   const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
