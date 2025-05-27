@@ -111,3 +111,93 @@ body {
   justify-content: center;
   z-index: 10;
 }
+
+/* Auto Rotate Toggle Styles */
+.annotation-toggle {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px 15px;
+  border-radius: 25px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  user-select: none;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  width: 50px;
+  height: 26px;
+  background-color: #ccc;
+  border-radius: 26px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-switch.active {
+  background-color: #049EF4;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch.active .toggle-slider {
+  transform: translateX(24px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .auto-rotate-toggle {
+    top: 10px;
+    left: 10px;
+    padding: 8px 12px;
+    border-radius: 20px;
+  }
+
+  .toggle-label {
+    font-size: 12px;
+  }
+
+  .toggle-switch {
+    width: 40px;
+    height: 22px;
+  }
+
+  .toggle-slider {
+    width: 18px;
+    height: 18px;
+  }
+
+  .toggle-switch.active .toggle-slider {
+    transform: translateX(18px);
+  }
+
+  .close-button {
+    top: 10px;
+    right: 10px;
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+}
