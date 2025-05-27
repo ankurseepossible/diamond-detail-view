@@ -489,6 +489,8 @@ const stories = [
   }
 ]
 
+const canvas = document.getElementById("webgi-canvas");
+
 async function setupViewer() {
   const viewer = new ViewerApp({
     canvas: document.getElementById("webgi-canvas") as HTMLCanvasElement,
@@ -679,6 +681,7 @@ async function showAnnotationDetail(viewer: ViewerApp, target: any, focusView: a
   setTimeout(() => {
     const cameraControls = viewer.scene.activeCamera.controls;
     cameraControls!.enabled = false;
+    viewer.scene.setDirty()
   }, 1100)
   const targetViewName = cameraViewPlugin!.camViews.find(view => view.name === target);
   hideOtherAnnotations();
@@ -814,61 +817,6 @@ async function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, s
       }
     }
     await showAnnotationDetail(viewer, target?.dataset.viewname, focusView)
-    // setTimeout(() => {
-    //   const cameraControls = viewer.scene.activeCamera.controls;
-    //   cameraControls!.enabled = false;
-    // }, 1100)
-    // const targetViewName = cameraViewPlugin!.camViews.find(view => view.name === target?.dataset.viewname);
-    // hideOtherAnnotations();
-    // closeButton!.style.display = 'block';
-    // focusView(targetViewName);
-    //
-    // const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
-    // const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
-    //
-    // setTimeout(() => {
-    //   const cameraControls = viewer.scene.activeCamera.controls;
-    //   if (cameraControls) {
-    //     cameraControls.autoRotate = false;
-    //     cameraControls.enabled = false;
-    //   }
-    //   viewer.scene.setDirty();
-    // }, actualAnimationDuration);
-    //
-    // viewer.scene.modelRoot.traverse(async (object: Object3D) => {
-    //   const targetViewNameStr = target?.dataset.viewname;
-    //
-    //   setTimeout(() => {
-    //     object.modelObject.traverse((model: Object3D) => {
-    //       if (model.type === "Mesh") {
-    //         if (model.name.includes('gem')) {
-    //           return;
-    //         }
-    //
-    //         const isFacetView = targetViewNameStr === "pavilionFacetView" || targetViewNameStr === "crownFacetView";
-    //
-    //         if (model.name.includes(targetViewNameStr)) {
-    //           model.material = LineStandardMaterial;
-    //           model.visible = true;
-    //         } else if (isFacetView && model.name.includes("line")) {
-    //           model.material = LineStandardMaterial;
-    //           model.visible = true;
-    //         } else if (model.name.includes("line")) {
-    //           model.material = disableLineStandardMaterial;
-    //           model.visible = true;
-    //         } else {
-    //           model.visible = false;
-    //         }
-    //       }
-    //     });
-    //
-    //     const cameraControls = viewer.scene.activeCamera.controls;
-    //     if (cameraControls) {
-    //       cameraControls.enabled = false;
-    //     }
-    //     viewer.scene.setDirty();
-    //   }, actualAnimationDuration + 100);
-    // });
   });
 
   const annotationContainer = document.querySelector('.annotation-container');
@@ -1132,6 +1080,7 @@ function bindIFrameEvents(viewer: ViewerApp) {
           if (annotationToggleContainer) {
             annotationToggleContainer.style.display = 'none';
           }
+          canvas!.style.pointerEvents = 'none';
           const { focusCameraView } = await bindActionButtonEvents(viewer);
           hideOtherAnnotations();
           await showAnnotationDetail(viewer, eventData.view, focusCameraView);
