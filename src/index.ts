@@ -1020,7 +1020,7 @@ function bindIFrameEvents(viewer: ViewerApp) {
     let eventData: any = event.data;
 
     switch (eventData?.action) {
-      case 'HandshakeReturn':
+      case 'DIA_HandshakeReturn':
         if (eventData.source) {
           viewer.scene.userData.frameSource = eventData.source;
         }
@@ -1036,7 +1036,7 @@ function bindIFrameEvents(viewer: ViewerApp) {
           window.dispatchEvent(clientDefinedEvent);
         }
         break;
-      case 'LoadDesign':
+      case 'DIA_LoadDesign':
         // await viewer.load(eventData.value);
         LineStandardMaterial.color = new Color(eventData.activeLineColor);
         disableLineStandardMaterial.color = new Color(eventData.deactivatedLineColor);
@@ -1065,7 +1065,7 @@ function bindIFrameEvents(viewer: ViewerApp) {
     }
   });
   window.parent.postMessage({
-    action: 'Handshake',
+    action: 'DIA_Handshake',
     from:   'Child'
   }, '*');
 }
