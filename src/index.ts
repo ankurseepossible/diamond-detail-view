@@ -576,13 +576,11 @@ async function setupViewer() {
   // @ts-ignore
   diamondPlugin!.envMap = diamondEnvMap;
   diamondPlugin!.envMapRotation = 3.3;
-  console.log("diamondPlugin :::::::::::::::::::", diamondPlugin)
 
   viewer.scene.addEventListener("addSceneObject", async ({ object }) => {
     if (!object.modelObject) return;
     object.modelObject.traverse((model) => {
       if (model.name.includes("gem") && model.type === "Mesh") {
-        console.log("model", model.name)
         const cacheKey = model.name
           .split("_")[0]
           .split("-")
@@ -595,7 +593,6 @@ async function setupViewer() {
         model.setMaterial(diamondMat);
         model.setDirty();
       } else if (model.name.includes("line")) {
-        console.log("line", model.name)
         model.material = LineStandardMaterial;
         model.setDirty();
         lineObjects.push(model);
@@ -634,13 +631,11 @@ async function setupViewer() {
 
   window.addEventListener("rotationSwitch", (event) => {
     rotationSwitchState = event.detail.enabled;
-    console.log('Rotation switch changed to:', rotationSwitchState);
     updateRotation();
   });
 
   window.addEventListener('annotationToggle', async (event) => {
     annotationsEnabled = event.detail.enabled;
-    console.log('Annotations changed to:', annotationsEnabled);
 
     updateLineVisibility(annotationsEnabled);
 
@@ -687,7 +682,6 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
   const annotationToggleContainer = document.querySelector('.annotation-toggle');
 
   closeButton!.addEventListener('click', () => {
-    console.log("Close button clicked - enabling camera controls");
 
     setTimeout(() => {
       const cameraControls = viewer.scene.activeCamera.controls;
@@ -703,7 +697,6 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
       focusView(initialView);
     }, 100);
     setTimeout(() => {
-      console.log("ShowAllANNOTATION");
       showAllAnnotations()
       if (annotationToggleContainer) {
         annotationToggleContainer.style.display = 'flex';
@@ -731,8 +724,6 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
 
   // @ts-ignore
   annotationElement?.querySelector('.annotation-content').addEventListener('click', (evt: MouseEvent) => {
-    console.log("Annotation content clicked - disabling camera controls");
-
     if (annotationToggleContainer) {
       annotationToggleContainer.style.display = 'none';
     }
@@ -755,9 +746,7 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
     hideOtherAnnotations();
     closeButton!.style.display = 'block';
     focusView(targetViewName);
-    console.log("cameraViewPlugin!.camViews ::::::::::::::::", cameraViewPlugin!.camViews)
-    console.log("targetViewName ::::::::::", target?.dataset.viewname);
-
+    
     const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
     const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
 
@@ -802,7 +791,6 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
           cameraControls.enabled = false;
         }
         viewer.scene.setDirty();
-        console.log("Models updated and camera controls re-disabled");
       }, actualAnimationDuration + 100);
     });
   });
@@ -961,9 +949,7 @@ async function bindActionButtonEvents(viewer: ViewerApp) {
   autoRotateBtn?.addEventListener('click', autoRotateEvent);
 
   async function focusCameraView(viewToFocus: any) {
-    console.log('focus camera view', viewToFocus);
     if (!viewToFocus) {
-      console.log("RETURNED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
       return;
     }
 
@@ -1032,11 +1018,9 @@ if (!("path" in PointerEvent.prototype)) {
 function bindIFrameEvents(viewer: ViewerApp) {
   window.addEventListener('message', async (event) => {
     let eventData: any = event.data;
-    console.log("===============", eventData)
 
     switch (eventData?.action) {
       case 'HandshakeReturn':
-        console.log('iFrame:::::::::::::::::::::::::::::: ' + eventData + ' Done');
         if (eventData.source) {
           viewer.scene.userData.frameSource = eventData.source;
         }
@@ -1084,14 +1068,4 @@ function bindIFrameEvents(viewer: ViewerApp) {
     action: 'Handshake',
     from:   'Child'
   }, '*');
-
-  if (!inIframe() && isLocalhost()) {
-    // To load webflow materials on local
-    window.postMessage({
-      action: "HandshakeReturn",
-      // bgColor: '000000',
-      client_id: 'caratwise'
-    }, '*');
-  }
-
 }
