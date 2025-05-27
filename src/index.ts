@@ -671,7 +671,69 @@ async function getSphereObject(viewer: ViewerApp): Promise<any> {
 
 const annotationItems: { model: Object3D; annotationElement: Element; }[] = [];
 
-function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story = {}, focusView: any, annotationIsEnable: boolean = true) {
+async function showAnnotationDetail(viewer: ViewerApp, target: any, focusView: any) {
+
+  const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
+  const closeButton = document.querySelector('.close-button');
+
+  setTimeout(() => {
+    const cameraControls = viewer.scene.activeCamera.controls;
+    cameraControls!.enabled = false;
+  }, 1100)
+  const targetViewName = cameraViewPlugin!.camViews.find(view => view.name === target);
+  hideOtherAnnotations();
+  closeButton!.style.display = 'block';
+  focusView(targetViewName);
+
+  const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
+  const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
+
+  setTimeout(() => {
+    const cameraControls = viewer.scene.activeCamera.controls;
+    if (cameraControls) {
+      cameraControls.autoRotate = false;
+      cameraControls.enabled = false;
+    }
+    viewer.scene.setDirty();
+  }, actualAnimationDuration);
+
+  viewer.scene.modelRoot.traverse(async (object: Object3D) => {
+    const targetViewNameStr = target;
+
+    setTimeout(() => {
+      object.modelObject.traverse((model: Object3D) => {
+        if (model.type === "Mesh") {
+          if (model.name.includes('gem')) {
+            return;
+          }
+
+          const isFacetView = targetViewNameStr === "pavilionFacetView" || targetViewNameStr === "crownFacetView";
+
+          if (model.name.includes(targetViewNameStr)) {
+            model.material = LineStandardMaterial;
+            model.visible = true;
+          } else if (isFacetView && model.name.includes("line")) {
+            model.material = LineStandardMaterial;
+            model.visible = true;
+          } else if (model.name.includes("line")) {
+            model.material = disableLineStandardMaterial;
+            model.visible = true;
+          } else {
+            model.visible = false;
+          }
+        }
+      });
+
+      const cameraControls = viewer.scene.activeCamera.controls;
+      if (cameraControls) {
+        cameraControls.enabled = false;
+      }
+      viewer.scene.setDirty();
+    }, actualAnimationDuration + 100);
+  });
+}
+
+async function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story = {}, focusView: any, annotationIsEnable: boolean = true) {
   viewer.scene.addSceneObject(newSphere);
   newSphere.position.set(point.x, point.y, point.z);
   viewer.scene.setDirty();
@@ -723,7 +785,7 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
   });
 
   // @ts-ignore
-  annotationElement?.querySelector('.annotation-content').addEventListener('click', (evt: MouseEvent) => {
+  annotationElement?.querySelector('.annotation-content').addEventListener('click', async (evt: MouseEvent) => {
     if (annotationToggleContainer) {
       annotationToggleContainer.style.display = 'none';
     }
@@ -737,62 +799,62 @@ function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, story =
         }
       }
     }
-
-    setTimeout(() => {
-      const cameraControls = viewer.scene.activeCamera.controls;
-      cameraControls!.enabled = false;
-    }, 1100)
-    const targetViewName = cameraViewPlugin!.camViews.find(view => view.name === target?.dataset.viewname);
-    hideOtherAnnotations();
-    closeButton!.style.display = 'block';
-    focusView(targetViewName);
-    
-    const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
-    const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
-
-    setTimeout(() => {
-      const cameraControls = viewer.scene.activeCamera.controls;
-      if (cameraControls) {
-        cameraControls.autoRotate = false;
-        cameraControls.enabled = false;
-      }
-      viewer.scene.setDirty();
-    }, actualAnimationDuration);
-
-    viewer.scene.modelRoot.traverse(async (object: Object3D) => {
-      const targetViewNameStr = target?.dataset.viewname;
-
-      setTimeout(() => {
-        object.modelObject.traverse((model: Object3D) => {
-          if (model.type === "Mesh") {
-            if (model.name.includes('gem')) {
-              return;
-            }
-
-            const isFacetView = targetViewNameStr === "pavilionFacetView" || targetViewNameStr === "crownFacetView";
-
-            if (model.name.includes(targetViewNameStr)) {
-              model.material = LineStandardMaterial;
-              model.visible = true;
-            } else if (isFacetView && model.name.includes("line")) {
-              model.material = LineStandardMaterial;
-              model.visible = true;
-            } else if (model.name.includes("line")) {
-              model.material = disableLineStandardMaterial;
-              model.visible = true;
-            } else {
-              model.visible = false;
-            }
-          }
-        });
-
-        const cameraControls = viewer.scene.activeCamera.controls;
-        if (cameraControls) {
-          cameraControls.enabled = false;
-        }
-        viewer.scene.setDirty();
-      }, actualAnimationDuration + 100);
-    });
+    await showAnnotationDetail(viewer, target?.dataset.viewname, focusView)
+    // setTimeout(() => {
+    //   const cameraControls = viewer.scene.activeCamera.controls;
+    //   cameraControls!.enabled = false;
+    // }, 1100)
+    // const targetViewName = cameraViewPlugin!.camViews.find(view => view.name === target?.dataset.viewname);
+    // hideOtherAnnotations();
+    // closeButton!.style.display = 'block';
+    // focusView(targetViewName);
+    //
+    // const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
+    // const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
+    //
+    // setTimeout(() => {
+    //   const cameraControls = viewer.scene.activeCamera.controls;
+    //   if (cameraControls) {
+    //     cameraControls.autoRotate = false;
+    //     cameraControls.enabled = false;
+    //   }
+    //   viewer.scene.setDirty();
+    // }, actualAnimationDuration);
+    //
+    // viewer.scene.modelRoot.traverse(async (object: Object3D) => {
+    //   const targetViewNameStr = target?.dataset.viewname;
+    //
+    //   setTimeout(() => {
+    //     object.modelObject.traverse((model: Object3D) => {
+    //       if (model.type === "Mesh") {
+    //         if (model.name.includes('gem')) {
+    //           return;
+    //         }
+    //
+    //         const isFacetView = targetViewNameStr === "pavilionFacetView" || targetViewNameStr === "crownFacetView";
+    //
+    //         if (model.name.includes(targetViewNameStr)) {
+    //           model.material = LineStandardMaterial;
+    //           model.visible = true;
+    //         } else if (isFacetView && model.name.includes("line")) {
+    //           model.material = LineStandardMaterial;
+    //           model.visible = true;
+    //         } else if (model.name.includes("line")) {
+    //           model.material = disableLineStandardMaterial;
+    //           model.visible = true;
+    //         } else {
+    //           model.visible = false;
+    //         }
+    //       }
+    //     });
+    //
+    //     const cameraControls = viewer.scene.activeCamera.controls;
+    //     if (cameraControls) {
+    //       cameraControls.enabled = false;
+    //     }
+    //     viewer.scene.setDirty();
+    //   }, actualAnimationDuration + 100);
+    // });
   });
 
   const annotationContainer = document.querySelector('.annotation-container');
@@ -1020,36 +1082,20 @@ function bindIFrameEvents(viewer: ViewerApp) {
     let eventData: any = event.data;
 
     switch (eventData?.action) {
-      case 'DIA_HandshakeReturn':
-        if (eventData.source) {
-          viewer.scene.userData.frameSource = eventData.source;
-        }
-        if (eventData.client_id) {
-          // To use client id for loading only client specific materials
-          viewer.scene.userData.clientId = eventData.client_id;
-
-          let clientDefinedEvent = new CustomEvent('ClientDefinedInternal', {
-            detail: {
-              clientId: eventData.client_id
-            }
-          });
-          window.dispatchEvent(clientDefinedEvent);
-        }
-        break;
-      case 'DIA_LoadDesign':
+      case 'DIA_LOAD_DESIGN':
         // await viewer.load(eventData.value);
         LineStandardMaterial.color = new Color(eventData.activeLineColor);
         disableLineStandardMaterial.color = new Color(eventData.deactivatedLineColor);
         switch (eventData.shape) {
-          case 'emerald' :
+          case 'EMR' :
             await viewer.load("EMR_ST-GL-Dimensions-Rhino8GLB-Export-Ready-R1.glb");
             await viewer.setEnvironmentMap("./MTL-immersive.hdr");
             break;
-          case 'round':
+          case 'RND':
             await viewer.load("RND_BC-HD-Dimensions-Rhino8GLB-Export-Ready-R1.glb");
             break;
 
-          case 'oval':
+          case 'OVA':
             await viewer.load("OVA_BC-HD-Dimensions-Rhino8GLB-Export-Ready-R1.glb");
             break;
           default:
@@ -1058,14 +1104,30 @@ function bindIFrameEvents(viewer: ViewerApp) {
         await manager!.addFromPath(`EMR_ST-GL-3D-R1-Rhino8-LayersNamed.CameraViews.json?v=1`);
         const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
         const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
-        await focusCameraView(cameraViewPlugin!.camViews.find(view => view.name === 'initialView'));
+        if (eventData.view) {
+          await showAnnotationDetail(viewer, eventData.view, focusCameraView);
+        } else {
+          await focusCameraView(cameraViewPlugin!.camViews.find(view => view.name === 'initialView'));
+        }
         viewer.scene.backgroundColor = eventData.canvasBackgroundColor;
+        break;
+
+      case 'DIA_CHANGE_VIEW':
+        if (eventData.view) {
+          const annotationToggleContainer = document.querySelector('.annotation-toggle');
+          if (annotationToggleContainer) {
+            annotationToggleContainer.style.display = 'none';
+          }
+          const { focusCameraView } = await bindActionButtonEvents(viewer);
+          hideOtherAnnotations();
+          await showAnnotationDetail(viewer, eventData.view, focusCameraView);
+        }
         break;
       default:
     }
   });
   window.parent.postMessage({
-    action: 'DIA_Handshake',
+    action: 'DIA_HANDSHAKE',
     from:   'Child'
   }, '*');
 }
