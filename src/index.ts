@@ -66,7 +66,7 @@ import {
   CameraUiPlugin,
   AssetManagerPlugin,
   CanvasSnipperPlugin,
-  ICameraControls, PopmotionPlugin, Cache, PresetLibraryPlugin, PluginPresetGroup, ITexture, Color,
+  ICameraControls, PopmotionPlugin, Cache, PresetLibraryPlugin, PluginPresetGroup, ITexture, Color, getUrlQueryParam,
 } from "webgi";
 import "./styles.css";
 import * as THREE from 'three';
@@ -490,6 +490,7 @@ const stories = [
 ]
 
 const canvas = document.getElementById("webgi-canvas");
+const annotationToggleContainer = document.querySelector('.annotation-toggle');
 
 async function setupViewer() {
   const viewer = new ViewerApp({
@@ -644,7 +645,7 @@ async function setupViewer() {
 
   const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
   const closeButton = document.querySelector('.close-button');
-  const annotationToggleContainer = document.querySelector('.annotation-toggle');
+
   const { focusCameraView } = await bindActionButtonEvents(viewer);
   closeButton!.addEventListener('click', () => {
 
@@ -812,6 +813,10 @@ async function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, s
         }
       }
     }
+    window.parent.postMessage({
+      action: 'DIA_VIEW',
+      view:   target?.dataset.viewname,
+    },'*')
     await showAnnotationDetail(viewer, target?.dataset.viewname, focusView)
   });
 
@@ -1039,10 +1044,8 @@ function bindIFrameEvents(viewer: ViewerApp) {
   window.addEventListener('message', async (event) => {
     let eventData: any = event.data;
     console.log("Received event data", eventData);
-
     switch (eventData?.action) {
       case 'DIA_LOAD_DESIGN':
-        // await viewer.load(eventData.value);
         LineStandardMaterial.color = new Color(eventData.activeLineColor);
         disableLineStandardMaterial.color = new Color(eventData.deactivatedLineColor);
         switch (eventData.shape) {
@@ -1077,6 +1080,19 @@ function bindIFrameEvents(viewer: ViewerApp) {
         const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
         const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
         setTimeout(() => {
+          if (annotationToggleContainer) {
+            annotationToggleContainer.style.display = 'flex';
+            document.querySelectorAll('.toggle-switch').forEach(toggle => {
+              toggle.style.backgroundColor = eventData.annotationColor;
+              toggle.addEventListener('click', () => {
+                if (toggle.classList.contains('active')) {
+                  toggle.style.backgroundColor = eventData.annotationColor; // active color
+                } else {
+                  toggle.style.backgroundColor = '#ccc'; // default color
+                }
+              });
+            });
+          }
           window.parent.postMessage({
             action: 'DIA_DESIGN_LOADED',
           }, '*')
@@ -1085,7 +1101,6 @@ function bindIFrameEvents(viewer: ViewerApp) {
 
       case 'DIA_CHANGE_VIEW':
         if (eventData.view) {
-          const annotationToggleContainer = document.querySelector('.annotation-toggle');
           if (annotationToggleContainer) {
             annotationToggleContainer.style.display = 'none';
           }
