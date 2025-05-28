@@ -66,7 +66,15 @@ import {
   CameraUiPlugin,
   AssetManagerPlugin,
   CanvasSnipperPlugin,
-  ICameraControls, PopmotionPlugin, Cache, PresetLibraryPlugin, PluginPresetGroup, ITexture, Color, getUrlQueryParam,
+  ICameraControls,
+  PopmotionPlugin,
+  Cache,
+  PresetLibraryPlugin,
+  PluginPresetGroup,
+  ITexture,
+  Color,
+  getUrlQueryParam,
+  TweakpaneUiPlugin, AssetExporterPlugin, DepthOfFieldPlugin, MaterialConfiguratorPlugin,
 } from "webgi";
 import "./styles.css";
 import * as THREE from 'three';
@@ -489,55 +497,54 @@ const stories = [
   }
 ]
 
+async function addPlugins(viewer: ViewerApp) {
+  // To Show configurable options
+  await viewer.addPlugin(MaterialConfiguratorPlugin);
+
+  if (viewer.scene.userData.debug) {
+    // For Debugging objects by picking it.
+    const tweakPaneUI = await viewer.addPlugin(TweakpaneUiPlugin);
+
+    tweakPaneUI.setupPluginUi(TonemapPlugin);
+    tweakPaneUI.setupPluginUi(SSRPlugin);
+    tweakPaneUI.setupPluginUi(TemporalAAPlugin);
+    tweakPaneUI.setupPluginUi(GroundPlugin);
+    tweakPaneUI.setupPluginUi(CameraViewPlugin);
+    tweakPaneUI.setupPluginUi(SSAOPlugin);
+    tweakPaneUI.setupPluginUi(BloomPlugin);
+    tweakPaneUI.setupPluginUi(DepthOfFieldPlugin);
+    tweakPaneUI.setupPluginUi(LUTPlugin);
+  }
+  // For Camera animation
+  await viewer.addPlugin(PopmotionPlugin);
+
+  if (viewer.scene.userData.debug) {
+    const tweakPaneUI2 = await viewer.getPlugin(TweakpaneUiPlugin);
+    tweakPaneUI2.setupPluginUi(AssetExporterPlugin);
+  }
+
+  return true;
+}
+
+async function setEnvironment(viewer: ViewerApp) {
+  const manager = viewer.getPlugin(AssetManagerPlugin);
+  await manager!.addFromPath(`./MTL-immersive.hdr`);
+  viewer.scene.envMapIntensity = 1.35;
+}
+
 const canvas = document.getElementById("webgi-canvas");
 const annotationToggleContainer = document.querySelector('.annotation-toggle');
+const LineStandardMaterial = new MeshStandardMaterial();
+const disableLineStandardMaterial = new MeshStandardMaterial();
 
 async function setupViewer() {
   const viewer = new ViewerApp({
     canvas: document.getElementById("webgi-canvas") as HTMLCanvasElement,
   });
+  await addBasePlugins(viewer);
+  await setEnvironment(viewer);
+  await addPlugins(viewer);
 
-  // viewer.renderer.renderScale = Math.min(window.devicePixelRatio, 2);
-  await viewer.addPlugin(DiamondPlugin);
-  await viewer.addPlugin(TonemapPlugin);
-  await viewer.addPlugin(AnisotropyPlugin);
-  await viewer.addPlugin(BloomPlugin);
-  await viewer.addPlugin(CameraViewPlugin);
-  await viewer.addPlugin(ChromaticAberrationPlugin)
-  await viewer.addPlugin(ClearcoatTintPlugin)
-  // await viewer.addPlugin(CombinedPostPlugin)
-  await viewer.addPlugin(CustomBumpMapPlugin)
-  await viewer.addPlugin(EXRLoadPlugin)
-  // await viewer.addPlugin(FBXLoadPlugin)
-  await viewer.addPlugin(FilmicGrainPlugin)
-  await viewer.addPlugin(FragmentClippingExtensionPlugin)
-  await viewer.addPlugin(FrameFadePlugin)
-  await viewer.addPlugin(FullScreenPlugin)
-  await viewer.addPlugin(GLTFAnimationPlugin)
-  await viewer.addPlugin(GLTFKHRMaterialVariantsPlugin)
-  // // await viewer.addPlugin(GLTFMeshOptPlugin)
-  await viewer.addPlugin(GammaCorrectionPlugin)
-  await viewer.addPlugin(KTX2LoadPlugin)
-  await viewer.addPlugin(LUTPlugin)
-  await viewer.addPlugin(NoiseBumpMaterialPlugin)
-  await viewer.addPlugin(NormalBufferPlugin)
-  await viewer.addPlugin(ObjMtlLoadPlugin)
-  await viewer.addPlugin(ParallaxCameraControllerPlugin)
-  // // await viewer.addPlugin(ProgressivePlugin)
-  await viewer.addPlugin(RandomizedDirectionalLightPlugin)
-  await viewer.addPlugin(Rhino3dmLoadPlugin)
-  // await viewer.addPlugin(SSAOPlugin)
-  await viewer.addPlugin(SSBevelPlugin)
-  await viewer.addPlugin(SSContactShadows)
-  await viewer.addPlugin(SSGIPlugin)
-  await viewer.addPlugin(SSRPlugin)
-  await viewer.addPlugin(STLLoadPlugin)
-  await viewer.addPlugin(TemporalAAPlugin)
-  await viewer.addPlugin(ThinFilmLayerPlugin)
-  await viewer.addPlugin(GLTFMeshOptPlugin)
-  await viewer.addPlugin(TriplanarUVMappingPlugin);
-  await viewer.addPlugin(VelocityBufferPlugin)
-  await viewer.addPlugin(VignettePlugin)
 
   const diamondMat = new DiamondMaterial({
     name:                        "DIA-Diamond-White-1",
@@ -908,9 +915,6 @@ function getNewAnnotation(id: number | string, story = {}) {
   return annotationElement;
 }
 
-const LineStandardMaterial = new MeshStandardMaterial();
-const disableLineStandardMaterial = new MeshStandardMaterial();
-
 function inIframe() {
   try {
     return window.self !== window.top;
@@ -1050,17 +1054,15 @@ function bindIFrameEvents(viewer: ViewerApp) {
         disableLineStandardMaterial.color = new Color(eventData.deactivatedLineColor);
         switch (eventData.shape) {
           case 'EMR' :
-            await viewer.load("EMR-R0.glb", {
-              autoCenter: false,
-            });
+            await viewer.load("EMR-R0.glb");
             await viewer.setEnvironmentMap("./MTL-immersive.hdr");
             break;
           case 'RND':
-            await viewer.load("RND_BC-HD-Dimensions-Rhino8GLB-Export-Ready-R1.glb");
+            await viewer.load("RND-R0.glb");
             break;
 
           case 'OVA':
-            await viewer.load("OVA_BC-HD-Dimensions-Rhino8GLB-Export-Ready-R1.glb");
+            await viewer.load("OVA-R0.glb");
             break;
           default:
             return;
