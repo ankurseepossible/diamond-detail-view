@@ -620,14 +620,7 @@ async function setupViewer() {
   const cameraControls = viewer.scene.activeCamera.controls;
 
   function updateRotation() {
-    const shouldRotate = !annotationsEnabled && rotationSwitchState;
-
-    cameraControls!.autoRotate = shouldRotate;
-    console.log('Rotation updated:', {
-      annotationsEnabled,
-      rotationSwitchState,
-      finalRotation: shouldRotate
-    });
+    cameraControls!.autoRotate = !annotationsEnabled && rotationSwitchState;
   }
 
   window.addEventListener("rotationSwitch", (event) => {
@@ -677,6 +670,9 @@ async function setupViewer() {
       if (annotationToggleContainer) {
         annotationToggleContainer.style.display = 'flex';
       }
+      window.parent.postMessage({
+        action: 'DIA_ANNOTATION_LOADED',
+      }, '*')
     }, 3000)
     closeButton!.style.display = 'none';
     canvas!.style.pointerEvents = 'auto';
@@ -1051,7 +1047,9 @@ function bindIFrameEvents(viewer: ViewerApp) {
         disableLineStandardMaterial.color = new Color(eventData.deactivatedLineColor);
         switch (eventData.shape) {
           case 'EMR' :
-            await viewer.load("EMR_ST-GL-Dimensions-Rhino8GLB-Export-Ready-R1.glb");
+            await viewer.load("EMR-R0.glb", {
+              autoCenter: false,
+            });
             await viewer.setEnvironmentMap("./MTL-immersive.hdr");
             break;
           case 'RND':
@@ -1064,9 +1062,6 @@ function bindIFrameEvents(viewer: ViewerApp) {
           default:
             return;
         }
-        window.parent.postMessage({
-          action: 'DIA_DESIGN_LOADED',
-        }, '*')
         const manager = viewer.getPlugin(AssetManagerPlugin);
         await manager!.addFromPath(`EMR_ST-GL-3D-R1-Rhino8-LayersNamed.CameraViews.json?v=1`);
         const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
@@ -1079,6 +1074,13 @@ function bindIFrameEvents(viewer: ViewerApp) {
           const position = new Vector3(story.position.x, story.position.y, story.position.z);
           createStoryPoint(viewer, newSphere, position, story, focusCameraView)
         });
+        const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
+        const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
+        setTimeout(() => {
+          window.parent.postMessage({
+            action: 'DIA_DESIGN_LOADED',
+          }, '*')
+        }, actualAnimationDuration);
         break;
 
       case 'DIA_CHANGE_VIEW':
