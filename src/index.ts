@@ -446,8 +446,8 @@ const stories = [
     "name":     "CROWN FACET",
     "key":      "crownFacetView",
     "position": {
-      "x": -0.8758959900365444,
-      "y": 0.3308086235458171,
+      "x": -0.4,
+      "y": 0.1,
       "z": -1.2713988016024989
     }
   },
@@ -537,7 +537,6 @@ async function setupViewer() {
   await viewer.addPlugin(TriplanarUVMappingPlugin);
   await viewer.addPlugin(VelocityBufferPlugin)
   await viewer.addPlugin(VignettePlugin)
-  viewer.renderer.refreshPipeline();
 
   const diamondMat = new DiamondMaterial({
     name:                        "DIA-Diamond-White-1",
@@ -571,6 +570,15 @@ async function setupViewer() {
     viewer.scene.setDirty();
   }
 
+  const normalViewDistance = { min: 7, max: 12 };
+  const cameraOptions = viewer.scene.activeCamera.getCameraOptions();
+  cameraOptions.fov = 1;
+  const CamControls: ICameraControls | undefined = viewer.scene.activeCamera.controls;
+  CamControls!.enableZoom = false;
+
+  CamControls!.minDistance = normalViewDistance.min;
+  CamControls!.maxDistance = normalViewDistance.max;
+  viewer.scene.activeCamera.setCameraOptions(cameraOptions);
 
   const DiaManager = viewer.getPlugin(AssetManagerPlugin);
   const diamondEnvMap: ITexture | undefined = await DiaManager!.importer!.importSinglePath<ITexture>("./GEM-immersive.hdr");
@@ -578,6 +586,7 @@ async function setupViewer() {
   // @ts-ignore
   diamondPlugin!.envMap = diamondEnvMap;
   diamondPlugin!.envMapRotation = 3.3;
+  viewer.renderer.refreshPipeline();
 
   viewer.scene.addEventListener("addSceneObject", async ({ object }) => {
     if (!object.modelObject) return;
@@ -605,17 +614,8 @@ async function setupViewer() {
     });
   });
 
-  const normalViewDistance = { min: 7, max: 12 };
-  const cameraOptions = viewer.scene.activeCamera.getCameraOptions();
-  cameraOptions.fov = 1;
-  const CamControls: ICameraControls | undefined = viewer.scene.activeCamera.controls;
-  CamControls!.enableZoom = false;
+  // const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
 
-  CamControls!.minDistance = normalViewDistance.min;
-  CamControls!.maxDistance = normalViewDistance.max;
-  viewer.scene.activeCamera.setCameraOptions(cameraOptions);
-  const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
-  const sphere = await getSphereObject(viewer);
   let rotationSwitchState = true;
   let annotationsEnabled = true;
   const cameraControls = viewer.scene.activeCamera.controls;
@@ -650,10 +650,54 @@ async function setupViewer() {
     updateRotation();
   });
 
-  stories.forEach(story => {
-    const newSphere = sphere.clone();
-    const position = new Vector3(story.position.x, story.position.y, story.position.z);
-    createStoryPoint(viewer, newSphere, position, story, focusCameraView)
+  const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
+  const closeButton = document.querySelector('.close-button');
+  const annotationToggleContainer = document.querySelector('.annotation-toggle');
+  const { focusCameraView } = await bindActionButtonEvents(viewer);
+  closeButton!.addEventListener('click', () => {
+
+    window.postMessage({
+      action: 'DIA_CLICK_CLOSE_BTN',
+    })
+
+    setTimeout(() => {
+      const cameraControls = viewer.scene.activeCamera.controls;
+      if (cameraControls) {
+        cameraControls.enabled = false;
+        cameraControls.autoRotate = false;
+      }
+      viewer.scene.setDirty();
+    }, 1100);
+
+    setTimeout(() => {
+      const initialView = cameraViewPlugin!.camViews.find(view => view.name === 'initialView');
+      focusCameraView(initialView);
+    }, 100);
+    setTimeout(() => {
+      showAllAnnotations()
+      if (annotationToggleContainer) {
+        annotationToggleContainer.style.display = 'flex';
+      }
+    }, 3000)
+    closeButton!.style.display = 'none';
+    canvas!.style.pointerEvents = 'auto';
+
+    viewer.scene.modelRoot.traverse((object: Object3D) => {
+      object.modelObject.traverse((model: Object3D) => {
+        if (model.type === "Mesh") {
+          if (model.name.includes('gem')) {
+            return; // Keep gems visible
+          }
+          if (model.name.includes("line")) {
+            model.material = LineStandardMaterial;
+            model.visible = true;
+          } else {
+            model.visible = false;
+          }
+        }
+      });
+    });
+    viewer.scene.setDirty();
   });
 
   viewer.scene.setDirty();
@@ -756,50 +800,7 @@ async function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, s
   viewer.scene.setDirty();
 
   const annotationElement = getNewAnnotation(newSphere.uuid, story);
-  const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
-  const closeButton = document.querySelector('.close-button');
   const annotationToggleContainer = document.querySelector('.annotation-toggle');
-
-  closeButton!.addEventListener('click', () => {
-
-    setTimeout(() => {
-      const cameraControls = viewer.scene.activeCamera.controls;
-      if (cameraControls) {
-        cameraControls.enabled = false;
-        cameraControls.autoRotate = false;
-      }
-      viewer.scene.setDirty();
-    }, 1100);
-
-    setTimeout(() => {
-      const initialView = cameraViewPlugin!.camViews.find(view => view.name === 'initialView');
-      focusView(initialView);
-    }, 100);
-    setTimeout(() => {
-      showAllAnnotations()
-      if (annotationToggleContainer) {
-        annotationToggleContainer.style.display = 'flex';
-      }
-    }, 3000)
-    closeButton!.style.display = 'none';
-
-    viewer.scene.modelRoot.traverse((object: Object3D) => {
-      object.modelObject.traverse((model: Object3D) => {
-        if (model.type === "Mesh") {
-          if (model.name.includes('gem')) {
-            return; // Keep gems visible
-          }
-          if (model.name.includes("line")) {
-            model.material = LineStandardMaterial;
-            model.visible = true;
-          } else {
-            model.visible = false;
-          }
-        }
-      });
-    });
-    viewer.scene.setDirty();
-  });
 
   // @ts-ignore
   annotationElement?.querySelector('.annotation-content').addEventListener('click', async (evt: MouseEvent) => {
@@ -1062,17 +1063,20 @@ function bindIFrameEvents(viewer: ViewerApp) {
             await viewer.load("OVA_BC-HD-Dimensions-Rhino8GLB-Export-Ready-R1.glb");
             break;
           default:
+            return;
         }
         const manager = viewer.getPlugin(AssetManagerPlugin);
         await manager!.addFromPath(`EMR_ST-GL-3D-R1-Rhino8-LayersNamed.CameraViews.json?v=1`);
         const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
         const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
-        if (eventData.view) {
-          await showAnnotationDetail(viewer, eventData.view, focusCameraView);
-        } else {
-          await focusCameraView(cameraViewPlugin!.camViews.find(view => view.name === 'initialView'));
-        }
+        await focusCameraView(cameraViewPlugin!.camViews.find(view => view.name === 'initialView'));
         viewer.scene.backgroundColor = eventData.canvasBackgroundColor;
+        const sphere = await getSphereObject(viewer);
+        stories.forEach(story => {
+          const newSphere = sphere.clone();
+          const position = new Vector3(story.position.x, story.position.y, story.position.z);
+          createStoryPoint(viewer, newSphere, position, story, focusCameraView)
+        });
         break;
 
       case 'DIA_CHANGE_VIEW':
@@ -1090,6 +1094,7 @@ function bindIFrameEvents(viewer: ViewerApp) {
       default:
     }
   });
+
   window.parent.postMessage({
     action: 'DIA_HANDSHAKE',
     from:   'Child'
