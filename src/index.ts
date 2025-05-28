@@ -908,8 +908,8 @@ function getNewAnnotation(id: number | string, story = {}) {
   return annotationElement;
 }
 
-const LineStandardMaterial = new MeshStandardMaterial({ flatShading: true });
-const disableLineStandardMaterial = new MeshStandardMaterial({ flatShading: true });
+const LineStandardMaterial = new MeshStandardMaterial();
+const disableLineStandardMaterial = new MeshStandardMaterial();
 
 function inIframe() {
   try {
