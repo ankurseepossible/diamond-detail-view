@@ -655,9 +655,9 @@ async function setupViewer() {
   const { focusCameraView } = await bindActionButtonEvents(viewer);
   closeButton!.addEventListener('click', () => {
 
-    window.postMessage({
+    window.parent.postMessage({
       action: 'DIA_CLICK_CLOSE_BTN',
-    })
+    }, '*')
 
     setTimeout(() => {
       const cameraControls = viewer.scene.activeCamera.controls;
@@ -1064,9 +1064,9 @@ function bindIFrameEvents(viewer: ViewerApp) {
           default:
             return;
         }
-        window.postMessage({
+        window.parent.postMessage({
           action: 'DIA_DESIGN_LOADED',
-        })
+        }, '*')
         const manager = viewer.getPlugin(AssetManagerPlugin);
         await manager!.addFromPath(`EMR_ST-GL-3D-R1-Rhino8-LayersNamed.CameraViews.json?v=1`);
         const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
