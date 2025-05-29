@@ -21,7 +21,12 @@ import {
   Cache,
   ITexture,
   Color,
-  TweakpaneUiPlugin, AssetExporterPlugin, DepthOfFieldPlugin, MaterialConfiguratorPlugin, MeshBasicMaterial,
+  TweakpaneUiPlugin,
+  AssetExporterPlugin,
+  DepthOfFieldPlugin,
+  MaterialConfiguratorPlugin,
+  MeshBasicMaterial,
+  PresetLibraryPlugin, PluginPresetGroup, PickingPlugin, ObjectPicker,
 } from "webgi";
 import "./styles.css";
 import * as THREE from 'three';
@@ -363,37 +368,27 @@ const stories = [
 ]
 
 async function addPlugins(viewer: ViewerApp) {
-  // To Show configurable options
-  await viewer.addPlugin(MaterialConfiguratorPlugin);
 
-  if (viewer.scene.userData.debug) {
+  if (false) {
     // For Debugging objects by picking it.
     const tweakPaneUI = await viewer.addPlugin(TweakpaneUiPlugin);
 
     tweakPaneUI.setupPluginUi(TonemapPlugin);
-    tweakPaneUI.setupPluginUi(SSRPlugin);
+    tweakPaneUI.setupPluginUi(DiamondPlugin);
     tweakPaneUI.setupPluginUi(TemporalAAPlugin);
     tweakPaneUI.setupPluginUi(GroundPlugin);
     tweakPaneUI.setupPluginUi(CameraViewPlugin);
     tweakPaneUI.setupPluginUi(BloomPlugin);
-    tweakPaneUI.setupPluginUi(DepthOfFieldPlugin);
-    tweakPaneUI.setupPluginUi(LUTPlugin);
   }
   // For Camera animation
   await viewer.addPlugin(PopmotionPlugin);
-
-  if (viewer.scene.userData.debug) {
-    const tweakPaneUI2 = await viewer.getPlugin(TweakpaneUiPlugin);
-    tweakPaneUI2.setupPluginUi(AssetExporterPlugin);
-  }
 
   return true;
 }
 
 async function setEnvironment(viewer: ViewerApp) {
   const manager = viewer.getPlugin(AssetManagerPlugin);
-  await manager!.addFromPath(`./MTL-immersive.hdr`);
-  viewer.scene.envMapIntensity = 1.35;
+  await manager!.addFromPath(`./default.json`);
 }
 
 const canvas = document.getElementById("immersive-canvas");
@@ -406,6 +401,9 @@ async function setupViewer() {
     canvas: document.getElementById("immersive-canvas") as HTMLCanvasElement,
   });
   await addBasePlugins(viewer);
+  const presetLibraryPlugin = await viewer.getPlugin(PresetLibraryPlugin);
+  presetLibraryPlugin?.presetGroups?.push(new PluginPresetGroup(BloomPlugin.PluginType));
+  presetLibraryPlugin?.presetGroups?.push(new PluginPresetGroup(TonemapPlugin.PluginType));
   await setEnvironment(viewer);
   await addPlugins(viewer);
 
@@ -413,14 +411,14 @@ async function setupViewer() {
   const diamondMat = new DiamondMaterial({
     name:                        "DIA-Diamond-White-1",
     color:                       0xffffff,
-    envMapIntensity:             1,
-    dispersion:                  0.012,
+    envMapIntensity:             1.55,
+    dispersion:                  0.01,
     squashFactor:                0.98,
     geometryFactor:              0.5,
     gammaFactor:                 1,
-    absorptionFactor:            1,
+    absorptionFactor:            0,
     reflectivity:                0.5,
-    refractiveIndex:             2.6,
+    refractiveIndex:             2.4,
     rayBounces:                  5,
     diamondOrientedEnvMap:       0,
     boostFactors:                new Vector3(1, 1, 1),
@@ -442,18 +440,20 @@ async function setupViewer() {
     viewer.scene.setDirty();
   }
 
-  const normalViewDistance = { min: 7, max: 12 };
+  const normalViewDistance = { min: 150, max: 200 };
   const cameraOptions = viewer.scene.activeCamera.getCameraOptions();
   cameraOptions.fov = 1;
   const CamControls: ICameraControls | undefined = viewer.scene.activeCamera.controls;
-  CamControls!.enableZoom = false;
 
   CamControls!.minDistance = normalViewDistance.min;
   CamControls!.maxDistance = normalViewDistance.max;
   viewer.scene.activeCamera.setCameraOptions(cameraOptions);
 
+  const groundPlugin = viewer?.getPlugin(GroundPlugin);
+  groundPlugin.enabled = false;
+
   const DiaManager = viewer.getPlugin(AssetManagerPlugin);
-  const diamondEnvMap: ITexture | undefined = await DiaManager!.importer!.importSinglePath<ITexture>("./GEM-immersive.hdr");
+  const diamondEnvMap: ITexture | undefined = await DiaManager!.importer!.importSinglePath<ITexture>("./env_gem.exr");
   const diamondPlugin: DiamondPlugin | undefined = viewer.getPluginByType('Diamond');
   // @ts-ignore
   diamondPlugin!.envMap = diamondEnvMap;
@@ -916,7 +916,6 @@ function bindIFrameEvents(viewer: ViewerApp) {
         switch (eventData.shape) {
           case 'EMR' :
             await viewer.load("EMR-R0.glb");
-            await viewer.setEnvironmentMap("./MTL-immersive.hdr");
             break;
           case 'RND':
             await viewer.load("RND-R0.glb");

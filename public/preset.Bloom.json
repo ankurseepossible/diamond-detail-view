@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "type": "Bloom",
+  "pass": {
+    "threshold": 2,
+    "softThreshold": 0.5,
+    "intensity": 0.2,
+    "bloomIterations": 4,
+    "radius": 0.6,
+    "power": 1,
+    "enabled": true
+  },
+  "resources": {
+    "geometries": {},
+    "materials": {},
+    "textures": {},
+    "images": {},
+    "shapes": {},
+    "skeletons": {},
+    "animations": {},
+    "extras": {}
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "extension": {
+    "toneMapping": 4,
+    "tonemapBackground": false,
+    "clipBackground": false,
+    "exposure": 1.1,
+    "saturation": 1,
+    "contrast": 1.05
+  },
+  "enabled": true,
+  "type": "Tonemap",
+  "resources": {
+    "geometries": {},
+    "materials": {},
+    "textures": {},
+    "images": {},
+    "shapes": {},
+    "skeletons": {},
+    "animations": {},
+    "extras": {}
+  }
+}

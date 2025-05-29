@@ -7,7 +7,7 @@
     "prestart": "rimraf dist",
     "prebuild": "rimraf dist",
     "prebuild:deploy": "rimraf dist 3dviewer",
-    "dev": "vite",
+    "dev": "vite --port 3000",
     "start": "vite --host",
     "preview": "vite preview",
     "build": "vite build",

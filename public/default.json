@@ -1,0 +1,5 @@
+{
+  "Bloom": "./preset.Bloom.json",
+  "Tonemap": "./preset.Tonemap.json",
+  "type": "PresetLibraryPlugin"
+}
