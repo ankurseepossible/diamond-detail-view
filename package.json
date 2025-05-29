@@ -1,7 +1,7 @@
 {
-  "name": "webgi-vanilla-typescript",
+  "name": "immersive-diamond-viewer",
   "version": "1.0.0",
-  "description": "WebGi + TypeScript example starter project",
+  "description": "Immersive Diamond Viewer",
   "main": "index.html",
   "scripts": {
     "prestart": "rimraf dist",

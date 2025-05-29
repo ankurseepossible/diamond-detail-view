@@ -398,14 +398,14 @@ async function setEnvironment(viewer: ViewerApp) {
   viewer.scene.envMapIntensity = 1.35;
 }
 
-const canvas = document.getElementById("webgi-canvas");
+const canvas = document.getElementById("immersive-canvas");
 const annotationToggleContainer = document.querySelector('.annotation-toggle');
 const LineStandardMaterial = new MeshBasicMaterial();
 const disableLineStandardMaterial = new MeshBasicMaterial();
 
 async function setupViewer() {
   const viewer = new ViewerApp({
-    canvas: document.getElementById("webgi-canvas") as HTMLCanvasElement,
+    canvas: document.getElementById("immersive-canvas") as HTMLCanvasElement,
   });
   await addBasePlugins(viewer);
   await setEnvironment(viewer);
