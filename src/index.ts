@@ -5,80 +5,28 @@ import {
   DiamondMaterial,
   addBasePlugins,
   Vector3,
-  WireframeGeometry2,
-  LineMaterial,
-  LineSegments2,
-  Vector2,
-  AssetImporter,
   Object3D,
-  Wireframe,
-  EdgesGeometry,
-  LineSegments,
-  LineBasicMaterial,
-  LineGeometry,
-  Line2,
-  Line,
-  IMaterial,
-  AnisotropyPlugin,
   BloomPlugin,
   CameraViewPlugin,
-  ChromaticAberrationPlugin,
-  ClearcoatTintPlugin,
-  CombinedPostPlugin,
-  CustomBumpMapPlugin,
-  EXRLoadPlugin,
-  FBXLoadPlugin,
-  FilmicGrainPlugin,
-  FragmentClippingExtensionPlugin,
-  FrameFadePlugin,
-  FullScreenPlugin,
-  GLTFAnimationPlugin,
-  GLTFKHRMaterialVariantsPlugin,
-  GLTFMeshOptPlugin,
-  GammaCorrectionPlugin,
-  KTX2LoadPlugin,
   LUTPlugin,
-  NoiseBumpMaterialPlugin,
-  NormalBufferPlugin,
-  ObjMtlLoadPlugin,
-  ParallaxCameraControllerPlugin,
-  ProgressivePlugin,
-  RandomizedDirectionalLightPlugin,
-  Rhino3dmLoadPlugin,
   SSAOPlugin,
-  SSBevelPlugin,
-  SSContactShadows,
-  SSGIPlugin,
   SSRPlugin,
-  STLLoadPlugin,
   TemporalAAPlugin,
-  ThinFilmLayerPlugin,
   TonemapPlugin,
-  TriplanarUVMappingPlugin,
-  VelocityBufferPlugin,
-  VignettePlugin,
-  HDRiGroundPlugin,
   MeshStandardMaterial,
   SphereGeometry,
   MeshBasicMaterial2,
   Mesh,
-  OrthographicCamera,
-  CameraUiPlugin,
   AssetManagerPlugin,
-  CanvasSnipperPlugin,
   ICameraControls,
   PopmotionPlugin,
   Cache,
-  PresetLibraryPlugin,
-  PluginPresetGroup,
   ITexture,
   Color,
-  getUrlQueryParam,
-  TweakpaneUiPlugin, AssetExporterPlugin, DepthOfFieldPlugin, MaterialConfiguratorPlugin,
+  TweakpaneUiPlugin, AssetExporterPlugin, DepthOfFieldPlugin, MaterialConfiguratorPlugin, MeshBasicMaterial,
 } from "webgi";
 import "./styles.css";
 import * as THREE from 'three';
-import { func, or } from "three/examples/jsm/nodes/shadernode/ShaderNodeBaseElements";
 import get = Cache.get;
 
 // Interface for storing annotation points
@@ -86,8 +34,6 @@ interface AnnotationPoint {
   position: Vector3;
   name: string;
 }
-
-let lineMaterialColor, disableLineMaterialColor;
 
 // Class to manage annotation functionality
 class AnnotationManager {
@@ -212,8 +158,6 @@ class AnnotationManager {
 
     // Update UI list
     this.updateAnnotationList();
-
-    console.log(`Added annotation point "${pointName}" at`, position);
   }
 
 
@@ -342,85 +286,8 @@ class AnnotationManager {
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-
-    console.log("Exported annotations:", data);
   }
 }
-
-// const stories = [
-//   {
-//     "name":     "TABLE",
-//     "key":      "tableView",
-//     "position": {
-//       "x": -0.020103882675494667,
-//       "y": 1.9971174974613697,
-//       "z": -2.283109775147663
-//     }
-//   },
-//   {
-//     "name":     "RATIO",
-//     "key":      "ratioView",
-//     "position": {
-//       "x": -0.06244029241808358,
-//       "y": 1.997117339666,
-//       "z": 2.2709715430328696
-//     }
-//   },
-//   {
-//     "name":     "GIRDLE",
-//     "key":      "girdleView",
-//     "position": {
-//       "x": -2.893639777739961,
-//       "y": 0.34195275919153933,
-//       "z": -4.0528211212138086
-//     }
-//   },
-//   {
-//     "name": "CROWN FACET",
-//     "key":  "crownFacetView",
-//     "position": {
-//       "x": -4.721119183126905,
-//       "y": 0.3382773880203561,
-//       "z": 1.5846546354738684
-//     }
-//   },
-//   {
-//     "name": "CROWN HEIGHT",
-//     "key":  "crownHeightView",
-//     "position": {
-//       "x":-4.267170846519171,
-//       "y":0.8316834227256531,
-//       "z":-1.7654174018895612
-//     }
-//   },
-//   {
-//     "name": "DEPTH",
-//     "key":  "depthView",
-//     "position": {
-//       "x": -2.503246609586932,
-//       "y": -1.1457987500861089,
-//       "z": -2.3309932226163776
-//     }
-//   },
-//   {
-//     "name": "PAVILION HEIGHT",
-//     "key":  "pavilionHeightView",
-//     "position": {
-//       "x": -2.4056417412756295,
-//       "y": -1.5958268076142108,
-//       "z": 1.5862651100093792
-//     }
-//   },
-//   {
-//     "name": "PAVILION FACET",
-//     "key":  "pavilionFacetView",
-//     "position": {
-//       "x": -1.0732007426850139,
-//       "y": -1.9244316565853183,
-//       "z": -2.3047095134383895
-//     }
-//   }
-// ]
 
 const stories = [
   {
@@ -510,7 +377,6 @@ async function addPlugins(viewer: ViewerApp) {
     tweakPaneUI.setupPluginUi(TemporalAAPlugin);
     tweakPaneUI.setupPluginUi(GroundPlugin);
     tweakPaneUI.setupPluginUi(CameraViewPlugin);
-    tweakPaneUI.setupPluginUi(SSAOPlugin);
     tweakPaneUI.setupPluginUi(BloomPlugin);
     tweakPaneUI.setupPluginUi(DepthOfFieldPlugin);
     tweakPaneUI.setupPluginUi(LUTPlugin);
@@ -534,8 +400,8 @@ async function setEnvironment(viewer: ViewerApp) {
 
 const canvas = document.getElementById("webgi-canvas");
 const annotationToggleContainer = document.querySelector('.annotation-toggle');
-const LineStandardMaterial = new MeshStandardMaterial();
-const disableLineStandardMaterial = new MeshStandardMaterial();
+const LineStandardMaterial = new MeshBasicMaterial();
+const disableLineStandardMaterial = new MeshBasicMaterial();
 
 async function setupViewer() {
   const viewer = new ViewerApp({
@@ -652,10 +518,8 @@ async function setupViewer() {
 
   const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
   const closeButton = document.querySelector('.close-button');
-
   const { focusCameraView } = await bindActionButtonEvents(viewer);
   closeButton!.addEventListener('click', () => {
-
     window.parent.postMessage({
       action: 'DIA_CLICK_CLOSE_BTN',
     }, '*')
@@ -673,6 +537,7 @@ async function setupViewer() {
       const initialView = cameraViewPlugin!.camViews.find(view => view.name === 'initialView');
       focusCameraView(initialView);
     }, 100);
+    const actualAnimationDuration = cameraViewPlugin?.animDuration || 1000;
     setTimeout(() => {
       showAllAnnotations()
       if (annotationToggleContainer) {
@@ -681,7 +546,7 @@ async function setupViewer() {
       window.parent.postMessage({
         action: 'DIA_ANNOTATION_LOADED',
       }, '*')
-    }, 3000)
+    }, actualAnimationDuration)
     closeButton!.style.display = 'none';
     canvas!.style.pointerEvents = 'auto';
 
@@ -722,6 +587,7 @@ const annotationItems: { model: Object3D; annotationElement: Element; }[] = [];
 
 async function showAnnotationDetail(viewer: ViewerApp, target: any, focusView: any) {
 
+  canvas!.style.pointerEvents = 'none';
   const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
   const closeButton = document.querySelector('.close-button');
 
@@ -759,7 +625,7 @@ async function showAnnotationDetail(viewer: ViewerApp, target: any, focusView: a
       cameraControls.enabled = false;
     }
     viewer.scene.setDirty();
-  }, actualAnimationDuration);
+  }, actualAnimationDuration + 500);
 
   viewer.scene.modelRoot.traverse(async (object: Object3D) => {
     const targetViewNameStr = target;
@@ -793,7 +659,7 @@ async function showAnnotationDetail(viewer: ViewerApp, target: any, focusView: a
         cameraControls.enabled = false;
       }
       viewer.scene.setDirty();
-    }, actualAnimationDuration + 100);
+    }, actualAnimationDuration + 600);
   });
 }
 
@@ -823,7 +689,7 @@ async function createStoryPoint(viewer: ViewerApp, newSphere: any, point: any, s
     window.parent.postMessage({
       action: 'DIA_VIEW',
       view:   target?.dataset.viewname,
-    },'*')
+    }, '*')
     await showAnnotationDetail(viewer, target?.dataset.viewname, focusView)
   });
 
@@ -981,7 +847,6 @@ async function bindActionButtonEvents(viewer: ViewerApp) {
     if (!viewToFocus) {
       return;
     }
-
     viewToFocus?.focusView();
     viewer.scene.modelObject.traverse((model) => {
       if (model.type === 'Object3D' && model.name && model.userData.name) {
@@ -997,9 +862,7 @@ async function bindActionButtonEvents(viewer: ViewerApp) {
   let rootModel: Object3D;
   const popmotion = await viewer.getPlugin(PopmotionPlugin);
 
-  // Returning this function object to use in iframeEvents
   return {
-    // fullScreenEvent: fullScreenEvent,
     autoRotateEvent: autoRotateEvent,
     focusCameraView: focusCameraView
   };
@@ -1060,15 +923,20 @@ function bindIFrameEvents(viewer: ViewerApp) {
           case 'RND':
             await viewer.load("RND-R0.glb");
             break;
-
           case 'OVA':
             await viewer.load("OVA-R0.glb");
+            break;
+          case 'PEA':
+            await viewer.load("PEA-R0.glb");
+            break;
+          case 'MAR':
+            await viewer.load("MAR-R0.glb");
             break;
           default:
             return;
         }
         const manager = viewer.getPlugin(AssetManagerPlugin);
-        await manager!.addFromPath(`EMR_ST-GL-3D-R1-Rhino8-LayersNamed.CameraViews.json?v=1`);
+        await manager!.addFromPath(`CameraViews.json?v=1`);
         const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
         const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
         await focusCameraView(cameraViewPlugin!.camViews.find(view => view.name === 'initialView'));
