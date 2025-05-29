@@ -4,9 +4,16 @@
   "description": "WebGi + TypeScript example starter project",
   "main": "index.html",
   "scripts": {
+    "prestart": "rimraf dist",
+    "prebuild": "rimraf dist",
+    "prebuild:deploy": "rimraf dist 3dviewer",
     "dev": "vite",
+    "start": "vite --host",
+    "preview": "vite preview",
     "build": "vite build",
-    "preview": "vite preview"
+    "build:deploy": "vite build",
+    "postbuild": "node replace.build.js",
+    "postbuild:deploy": "node replace.build.js && mv dist 3dviewer"
   },
   "devDependencies": {
     "@types/webgi": "https://dist.pixotronics.com/webgi/runtime/bundle-types-0.9.1.tgz",
