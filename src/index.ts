@@ -8,8 +8,6 @@ import {
   Object3D,
   BloomPlugin,
   CameraViewPlugin,
-  LUTPlugin,
-  SSRPlugin,
   TemporalAAPlugin,
   TonemapPlugin,
   SphereGeometry,
@@ -22,11 +20,8 @@ import {
   ITexture,
   Color,
   TweakpaneUiPlugin,
-  AssetExporterPlugin,
-  DepthOfFieldPlugin,
-  MaterialConfiguratorPlugin,
   MeshBasicMaterial,
-  PresetLibraryPlugin, PluginPresetGroup, PickingPlugin, ObjectPicker,
+  PresetLibraryPlugin, PluginPresetGroup,
 } from "webgi";
 import "./styles.css";
 import * as THREE from 'three';
@@ -788,18 +783,6 @@ function getNewAnnotation(id: number | string, story = {}) {
   return annotationElement;
 }
 
-function inIframe() {
-  try {
-    return window.self !== window.top;
-  } catch (e) {
-    return true;
-  }
-}
-
-function isLocalhost(): boolean {
-  return location.hostname === "localhost" || location.hostname === "127.0.0.1";
-}
-
 async function animateObject(viewer: ViewerApp, popMotion: PopmotionPlugin, object: Object3D, targetPosition: Vector3, animationEase: string = EasingFunctions.circOut, duration: number = 2000) {
   for (let axis in targetPosition) {
     // @ts-ignore
@@ -928,6 +911,21 @@ function bindIFrameEvents(viewer: ViewerApp) {
             break;
           case 'MAR':
             await viewer.load("MAR-R0.glb");
+            break;
+          case 'RAD':
+            await viewer.load("RAD-R0.glb");
+            break;
+          case 'PRC':
+            await viewer.load("PRC-R0.glb");
+            break;
+          case 'HRT':
+            await viewer.load("HRT-R0.glb");
+            break;
+          case 'CUS':
+            await viewer.load("CUS-R0.glb");
+            break;
+          case 'ASC':
+            await viewer.load("ASC-R0.glb");
             break;
           default:
             return;
