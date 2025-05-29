@@ -9,11 +9,9 @@ import {
   BloomPlugin,
   CameraViewPlugin,
   LUTPlugin,
-  SSAOPlugin,
   SSRPlugin,
   TemporalAAPlugin,
   TonemapPlugin,
-  MeshStandardMaterial,
   SphereGeometry,
   MeshBasicMaterial2,
   Mesh,
@@ -524,8 +522,8 @@ async function setupViewer() {
       action: 'DIA_CLICK_CLOSE_BTN',
     }, '*')
 
+    const cameraControls = viewer.scene.activeCamera.controls;
     setTimeout(() => {
-      const cameraControls = viewer.scene.activeCamera.controls;
       if (cameraControls) {
         cameraControls.enabled = false;
         cameraControls.autoRotate = false;
@@ -538,14 +536,30 @@ async function setupViewer() {
       focusCameraView(initialView);
     }, 100);
     const actualAnimationDuration = cameraViewPlugin?.animDuration || 1000;
+    const toggleSwitch = document.getElementById('annotationToggle');
+    const rotationToggleSwitch = document.getElementById('rotationSwitch');
+    if (annotationToggleContainer) {
+      annotationToggleContainer.style.display = 'flex';
+    }
     setTimeout(() => {
-      showAllAnnotations()
-      if (annotationToggleContainer) {
-        annotationToggleContainer.style.display = 'flex';
+      if (toggleSwitch?.classList.contains('active')) {
+        showAllAnnotations();
+        window.parent.postMessage({
+          action: 'DIA_ANNOTATION_LOADED',
+        }, '*')
+      } else {
+        updateLineVisibility(false);
+        if (rotationToggleSwitch?.classList.contains('active')) {
+          setTimeout(() => {
+            if (cameraControls) {
+              cameraControls.enabled = true;
+              cameraControls.autoRotate = true;
+            }
+            viewer.scene.setDirty();
+          }, 100);
+        }
+        return;
       }
-      window.parent.postMessage({
-        action: 'DIA_ANNOTATION_LOADED',
-      }, '*')
     }, actualAnimationDuration)
     closeButton!.style.display = 'none';
     canvas!.style.pointerEvents = 'auto';
@@ -556,7 +570,7 @@ async function setupViewer() {
           if (model.name.includes('gem')) {
             return; // Keep gems visible
           }
-          if (model.name.includes("line")) {
+          if (model.name.includes("line") && toggleSwitch?.classList.contains('active')) {
             model.material = LineStandardMaterial;
             model.visible = true;
           } else {
@@ -593,9 +607,9 @@ async function showAnnotationDetail(viewer: ViewerApp, target: any, focusView: a
 
   setTimeout(() => {
     const cameraControls = viewer.scene.activeCamera.controls;
-    cameraControls!.enabled = false;
+    cameraControls!.autoRotate = false;
     viewer.scene.setDirty()
-  }, 1100)
+  }, 100)
   const targetViewName = cameraViewPlugin!.camViews.find(view => view.name === target);
   hideOtherAnnotations();
   closeButton!.style.display = 'block';
@@ -613,19 +627,12 @@ async function showAnnotationDetail(viewer: ViewerApp, target: any, focusView: a
     });
   });
 
-  focusView(targetViewName);
+  setTimeout(() => {
+    focusView(targetViewName);
+  }, 800)
 
   const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
   const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
-
-  setTimeout(() => {
-    const cameraControls = viewer.scene.activeCamera.controls;
-    if (cameraControls) {
-      cameraControls.autoRotate = false;
-      cameraControls.enabled = false;
-    }
-    viewer.scene.setDirty();
-  }, actualAnimationDuration + 500);
 
   viewer.scene.modelRoot.traverse(async (object: Object3D) => {
     const targetViewNameStr = target;
@@ -659,7 +666,7 @@ async function showAnnotationDetail(viewer: ViewerApp, target: any, focusView: a
         cameraControls.enabled = false;
       }
       viewer.scene.setDirty();
-    }, actualAnimationDuration + 600);
+    }, actualAnimationDuration + 1000);
   });
 }
 
@@ -818,15 +825,6 @@ async function animateObject(viewer: ViewerApp, popMotion: PopmotionPlugin, obje
 
 async function bindActionButtonEvents(viewer: ViewerApp) {
   let cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
-  if (cameraViewPlugin!.camViews.length > 1) {
-    let tempAnimDuration = cameraViewPlugin!.animDuration;
-    if ('animationDuration' in viewer.scene.userData) {
-      cameraViewPlugin!.animDuration = viewer.scene.userData.animationDuration;
-    }
-    cameraViewPlugin!.camViews[0].focusView();
-    cameraViewPlugin!.animDuration = tempAnimDuration;
-  }
-
   let autoRotateBtn = document.querySelector('.auto-rotate-btn');
 
   function autoRotateEvent(evt: any) {
