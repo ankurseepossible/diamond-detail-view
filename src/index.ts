@@ -948,6 +948,9 @@ function bindIFrameEvents(viewer: ViewerApp) {
         setTimeout(() => {
           if (annotationToggleContainer) {
             annotationToggleContainer.style.display = 'flex';
+            if(eventData.annotationFontFamily) document.querySelectorAll('.toggle-label').forEach(toggle => {
+              toggle.style.fontFamily = eventData.annotationFontFamily;
+            })
             document.querySelectorAll('.toggle-switch').forEach(toggle => {
               toggle.style.backgroundColor = eventData.annotationColor;
               toggle.addEventListener('click', () => {
