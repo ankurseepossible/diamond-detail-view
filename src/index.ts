@@ -396,10 +396,10 @@ async function setupViewer() {
     canvas: document.getElementById("immersive-canvas") as HTMLCanvasElement,
   });
   await addBasePlugins(viewer);
-  const presetLibraryPlugin = await viewer.getPlugin(PresetLibraryPlugin);
+  const presetLibraryPlugin = viewer.getPlugin(PresetLibraryPlugin);
   presetLibraryPlugin?.presetGroups?.push(new PluginPresetGroup(BloomPlugin.PluginType));
   presetLibraryPlugin?.presetGroups?.push(new PluginPresetGroup(TonemapPlugin.PluginType));
-  await setEnvironment(viewer);
+  // await setEnvironment(viewer);
   await addPlugins(viewer);
 
 
@@ -435,14 +435,17 @@ async function setupViewer() {
     viewer.scene.setDirty();
   }
 
-  const normalViewDistance = { min: 150, max: 200 };
+  const normalViewDistance = { min: 150, max: 300 };
   const cameraOptions = viewer.scene.activeCamera.getCameraOptions();
   cameraOptions.fov = 1;
   const CamControls: ICameraControls | undefined = viewer.scene.activeCamera.controls;
-
+  CamControls!.enablePan = false;
   CamControls!.minDistance = normalViewDistance.min;
   CamControls!.maxDistance = normalViewDistance.max;
   viewer.scene.activeCamera.setCameraOptions(cameraOptions);
+  CamControls!.minPolarAngle = 0;
+  CamControls!.maxPolarAngle = Math.PI;
+
 
   const groundPlugin = viewer?.getPlugin(GroundPlugin);
   groundPlugin.enabled = false;
