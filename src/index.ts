@@ -399,7 +399,7 @@ async function setupViewer() {
   const presetLibraryPlugin = viewer.getPlugin(PresetLibraryPlugin);
   presetLibraryPlugin?.presetGroups?.push(new PluginPresetGroup(BloomPlugin.PluginType));
   presetLibraryPlugin?.presetGroups?.push(new PluginPresetGroup(TonemapPlugin.PluginType));
-  // await setEnvironment(viewer);
+  await setEnvironment(viewer);
   await addPlugins(viewer);
 
 
