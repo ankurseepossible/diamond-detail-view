@@ -455,7 +455,7 @@ async function setupViewer() {
   const diamondPlugin: DiamondPlugin | undefined = viewer.getPluginByType('Diamond');
   // @ts-ignore
   diamondPlugin!.envMap = diamondEnvMap;
-  diamondPlugin!.envMapRotation = 3.3;
+  diamondPlugin!.envMapRotation = 2.3;
   viewer.renderer.refreshPipeline();
 
   viewer.scene.addEventListener("addSceneObject", async ({ object }) => {
@@ -540,11 +540,11 @@ async function setupViewer() {
       annotationToggleContainer.style.display = 'flex';
     }
     setTimeout(() => {
+      window.parent.postMessage({
+        action: 'DIA_ANNOTATION_LOADED',
+      }, '*')
       if (toggleSwitch?.classList.contains('active')) {
         showAllAnnotations();
-        window.parent.postMessage({
-          action: 'DIA_ANNOTATION_LOADED',
-        }, '*')
       } else {
         updateLineVisibility(false);
         if (rotationToggleSwitch?.classList.contains('active')) {
