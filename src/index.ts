@@ -609,6 +609,7 @@ async function showAnnotationDetail(viewer: ViewerApp, target: any, focusView: a
   hideOtherAnnotations();
 
   viewer.scene.modelRoot.traverse(async (object: Object3D) => {
+    closeButton!.style.display = 'none';
     object.modelObject.traverse((model: Object3D) => {
       if (model.type === "Mesh") {
         if (model.name.includes('gem')) {
