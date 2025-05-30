@@ -539,9 +539,6 @@ async function setupViewer() {
     setTimeout(() => {
       if (toggleSwitch?.classList.contains('active')) {
         showAllAnnotations();
-        window.parent.postMessage({
-          action: 'DIA_ANNOTATION_LOADED',
-        }, '*')
       } else {
         updateLineVisibility(false);
         if (rotationToggleSwitch?.classList.contains('active')) {
