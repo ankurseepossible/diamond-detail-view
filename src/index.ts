@@ -287,79 +287,783 @@ class AnnotationManager {
   }
 }
 
-const stories = [
+type ShapeName = "EMR" | "RND" | "OVA" | "PEA" | "MAR" | "RAD" | "PRC" | "HRT" | "CUS" | "ASC";
+
+interface ViewItem {
+  name: string;
+  key: string;
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  };
+}
+
+type ShapeObject = {
+  [key in ShapeName]?: ViewItem[];
+};
+
+const shapeStories: ShapeObject[] = [
   {
-    "name":     "TABLE",
-    "key":      "tableView",
-    "position": {
-      "x": 0.6366669121084445,
-      "y": 0.49289765997548174,
-      "z": -0.4171726540280889
-    }
+    "EMR": [
+      {
+        "name":     "TABLE",
+        "key":      "tableView",
+        "position": {
+          "x": 0.6366669121084445,
+          "y": 0.3,
+          "z": -0.4171726540280889
+        }
+      },
+      {
+        "name":     "RATIO",
+        "key":      "ratioView",
+        "position": {
+          "x": -0.6035071757341377,
+          "y": 0.3437213813490522,
+          "z": -0.03671880897078171
+        }
+      },
+      {
+        "name":     "GIRDLE",
+        "key":      "girdleView",
+        "position": {
+          "x": 0.15862029218881576,
+          "y": 0.0075973121474169,
+          "z": 1.42475253893591
+        }
+      },
+      {
+        "name":     "CROWN FACET",
+        "key":      "crownFacetView",
+        "position": {
+          "x": -0.4,
+          "y": 0.1,
+          "z": -1.2713988016024989
+        }
+      },
+      {
+        "name":     "CROWN HEIGHT",
+        "key":      "crownHeightView",
+        "position": {
+          "x": 0.07933897335510723,
+          "y": 0.24066156403552537,
+          "z": 1.165096879999456
+        }
+      },
+      {
+        "name":     "DEPTH",
+        "key":      "depthView",
+        "position": {
+          "x": 0.8067551705921767,
+          "y": 0.012943025771035205,
+          "z": -0.2629719383832498
+        }
+      },
+      {
+        "name":     "PAVILION HEIGHT",
+        "key":      "pavilionHeightView",
+        "position": {
+          "x": 0.10948382249209307,
+          "y": -0.32487387091374723,
+          "z": 1.238663210543583
+        }
+      },
+      {
+        "name":     "PAVILION FACET",
+        "key":      "pavilionFacetView",
+        "position": {
+          "x": -0.4104071059634021,
+          "y": -0.5552740884106853,
+          "z": 0.14552876855195696
+        }
+      }
+    ]
   },
   {
-    "name":     "RATIO",
-    "key":      "ratioView",
-    "position": {
-      "x": -0.6035071757341377,
-      "y": 0.5337213813490522,
-      "z": -0.03671880897078171
-    }
+    "RND": [
+      {
+        "name":     "TABLE",
+        "key":      "tableView",
+        "position": {
+          "x": 0.6366669121084445,
+          "y": 0.42289765997548174,
+          "z": -0.3171726540280889
+        }
+      },
+      {
+        "name":     "RATIO",
+        "key":      "ratioView",
+        "position": {
+          "x": -0.6035071757341377,
+          "y": 0.4237213813490522,
+          "z": -0.03671880897078171
+        }
+      },
+      {
+        "name":     "GIRDLE",
+        "key":      "girdleView",
+        "position": {
+          "x": 0.15862029218881576,
+          "y": 0.0075973121474169,
+          "z": 1.22475253893591
+        }
+      },
+      {
+        "name":     "CROWN FACET",
+        "key":      "crownFacetView",
+        "position": {
+          "x": -0.4,
+          "y": 0.1,
+          "z": -1.0
+        }
+      },
+      {
+        "name":     "CROWN HEIGHT",
+        "key":      "crownHeightView",
+        "position": {
+          "x": 0.07933897335510723,
+          "y": 0.22066156403552537,
+          "z": 1.125096879999456
+        }
+      },
+      {
+        "name":     "DEPTH",
+        "key":      "depthView",
+        "position": {
+          "x": 0.8067551705921767,
+          "y": 0.012943025771035205,
+          "z": -0.2629719383832498
+        }
+      },
+      {
+        "name":     "PAVILION HEIGHT",
+        "key":      "pavilionHeightView",
+        "position": {
+          "x": 0.10948382249209307,
+          "y": -0.32487387091374723,
+          "z": 1.038663210543583
+        }
+      },
+      {
+        "name":     "PAVILION FACET",
+        "key":      "pavilionFacetView",
+        "position": {
+          "x": -0.4104071059634021,
+          "y": -0.5552740884106853,
+          "z": 0.14552876855195696
+        }
+      }
+    ]
   },
   {
-    "name":     "GIRDLE",
-    "key":      "girdleView",
-    "position": {
-      "x": 0.15862029218881576,
-      "y": 0.2175973121474169,
-      "z": 1.22475253893591
-    }
+    "OVA": [
+      {
+        "name":     "TABLE",
+        "key":      "tableView",
+        "position": {
+          "x": 0.6366669121084445,
+          "y": 0.39289765997548174,
+          "z": -0.1171726540280889
+        }
+      },
+      {
+        "name":     "RATIO",
+        "key":      "ratioView",
+        "position": {
+          "x": -0.6035071757341377,
+          "y": 0.397213813490522,
+          "z": -0.03671880897078171
+        }
+      },
+      {
+        "name":     "GIRDLE",
+        "key":      "girdleView",
+        "position": {
+          "x": 0.15862029218881576,
+          "y": 0.0075973121474169,
+          "z": 1.22475253893591
+        }
+      },
+      {
+        "name":     "CROWN FACET",
+        "key":      "crownFacetView",
+        "position": {
+          "x": -0.4,
+          "y": 0.1,
+          "z": -1.0
+        }
+      },
+      {
+        "name":     "CROWN HEIGHT",
+        "key":      "crownHeightView",
+        "position": {
+          "x": 0.07933897335510723,
+          "y": 0.22066156403552537,
+          "z": 1.125096879999456
+        }
+      },
+      {
+        "name":     "DEPTH",
+        "key":      "depthView",
+        "position": {
+          "x": 0.8067551705921767,
+          "y": -0.312943025771035205,
+          "z": -0.2629719383832498
+        }
+      },
+      {
+        "name":     "PAVILION HEIGHT",
+        "key":      "pavilionHeightView",
+        "position": {
+          "x": 0.10948382249209307,
+          "y": -0.32487387091374723,
+          "z": 1.038663210543583
+        }
+      },
+      {
+        "name":     "PAVILION FACET",
+        "key":      "pavilionFacetView",
+        "position": {
+          "x": -0.4104071059634021,
+          "y": -0.5552740884106853,
+          "z": 0.14552876855195696
+        }
+      }
+    ]
   },
   {
-    "name":     "CROWN FACET",
-    "key":      "crownFacetView",
-    "position": {
-      "x": -0.4,
-      "y": 0.1,
-      "z": -1.2713988016024989
-    }
+    "PEA": [
+      {
+        "name":     "TABLE",
+        "key":      "tableView",
+        "position": {
+          "x": 0.4366669121084445,
+          "y": 0.36289765997548174,
+          "z": -0.0171726540280889
+        }
+      },
+      {
+        "name":     "RATIO",
+        "key":      "ratioView",
+        "position": {
+          "x": -0.4035071757341377,
+          "y": 0.367213813490522,
+          "z": -0.03671880897078171
+        }
+      },
+      {
+        "name":     "GIRDLE",
+        "key":      "girdleView",
+        "position": {
+          "x": 0.15862029218881576,
+          "y": 0.0075973121474169,
+          "z": 1.22475253893591
+        }
+      },
+      {
+        "name":     "CROWN FACET",
+        "key":      "crownFacetView",
+        "position": {
+          "x": -0.4,
+          "y": 0.1,
+          "z": -1.0
+        }
+      },
+      {
+        "name":     "CROWN HEIGHT",
+        "key":      "crownHeightView",
+        "position": {
+          "x": 0.07933897335510723,
+          "y": 0.22066156403552537,
+          "z": 1.125096879999456
+        }
+      },
+      {
+        "name":     "DEPTH",
+        "key":      "depthView",
+        "position": {
+          "x": 0.6067551705921767,
+          "y": -0.312943025771035205,
+          "z": -0.2629719383832498
+        }
+      },
+      {
+        "name":     "PAVILION HEIGHT",
+        "key":      "pavilionHeightView",
+        "position": {
+          "x": 0.10948382249209307,
+          "y": -0.32487387091374723,
+          "z": 1.038663210543583
+        }
+      },
+      {
+        "name":     "PAVILION FACET",
+        "key":      "pavilionFacetView",
+        "position": {
+          "x": -0.4104071059634021,
+          "y": -0.5552740884106853,
+          "z": 0.14552876855195696
+        }
+      }
+    ]
   },
   {
-    "name":     "CROWN HEIGHT",
-    "key":      "crownHeightView",
-    "position": {
-      "x": 0.07933897335510723,
-      "y": 0.44066156403552537,
-      "z": 1.165096879999456
-    }
+    "MAR": [
+      {
+        "name":     "TABLE",
+        "key":      "tableView",
+        "position": {
+          "x": 0.4366669121084445,
+          "y": 0.33289765997548174,
+          "z": -0.0171726540280889
+        }
+      },
+      {
+        "name":     "RATIO",
+        "key":      "ratioView",
+        "position": {
+          "x": -0.4035071757341377,
+          "y": 0.337213813490522,
+          "z": -0.03671880897078171
+        }
+      },
+      {
+        "name":     "GIRDLE",
+        "key":      "girdleView",
+        "position": {
+          "x": 0.15862029218881576,
+          "y": 0.0075973121474169,
+          "z": 1.22475253893591
+        }
+      },
+      {
+        "name":     "CROWN FACET",
+        "key":      "crownFacetView",
+        "position": {
+          "x": -0.4,
+          "y": 0.1,
+          "z": -1.0
+        }
+      },
+      {
+        "name":     "CROWN HEIGHT",
+        "key":      "crownHeightView",
+        "position": {
+          "x": 0.07933897335510723,
+          "y": 0.22066156403552537,
+          "z": 1.125096879999456
+        }
+      },
+      {
+        "name":     "DEPTH",
+        "key":      "depthView",
+        "position": {
+          "x": 0.5067551705921767,
+          "y": -0.312943025771035205,
+          "z": -0.2629719383832498
+        }
+      },
+      {
+        "name":     "PAVILION HEIGHT",
+        "key":      "pavilionHeightView",
+        "position": {
+          "x": 0.10948382249209307,
+          "y": -0.32487387091374723,
+          "z": 1.038663210543583
+        }
+      },
+      {
+        "name":     "PAVILION FACET",
+        "key":      "pavilionFacetView",
+        "position": {
+          "x": -0.2104071059634021,
+          "y": -0.5552740884106853,
+          "z": 0.14552876855195696
+        }
+      }
+    ]
   },
   {
-    "name":     "DEPTH",
-    "key":      "depthView",
-    "position": {
-      "x": 0.8067551705921767,
-      "y": 0.012943025771035205,
-      "z": -0.2629719383832498
-    }
+    "RAD": [
+      {
+        "name":     "TABLE",
+        "key":      "tableView",
+        "position": {
+          "x": 0.5366669121084445,
+          "y": 0.33289765997548174,
+          "z": -0.0171726540280889
+        }
+      },
+      {
+        "name":     "RATIO",
+        "key":      "ratioView",
+        "position": {
+          "x": -0.5035071757341377,
+          "y": 0.337213813490522,
+          "z": -0.03671880897078171
+        }
+      },
+      {
+        "name":     "GIRDLE",
+        "key":      "girdleView",
+        "position": {
+          "x": 0.15862029218881576,
+          "y": 0.0075973121474169,
+          "z": 1.22475253893591
+        }
+      },
+      {
+        "name":     "CROWN FACET",
+        "key":      "crownFacetView",
+        "position": {
+          "x": -0.4,
+          "y": 0.1,
+          "z": -1.0
+        }
+      },
+      {
+        "name":     "CROWN HEIGHT",
+        "key":      "crownHeightView",
+        "position": {
+          "x": 0.07933897335510723,
+          "y": 0.22066156403552537,
+          "z": 1.125096879999456
+        }
+      },
+      {
+        "name":     "DEPTH",
+        "key":      "depthView",
+        "position": {
+          "x": 0.9067551705921767,
+          "y": -0.312943025771035205,
+          "z": -0.2629719383832498
+        }
+      },
+      {
+        "name":     "PAVILION HEIGHT",
+        "key":      "pavilionHeightView",
+        "position": {
+          "x": 0.10948382249209307,
+          "y": -0.32487387091374723,
+          "z": 1.038663210543583
+        }
+      },
+      {
+        "name":     "PAVILION FACET",
+        "key":      "pavilionFacetView",
+        "position": {
+          "x": -0.2104071059634021,
+          "y": -0.5552740884106853,
+          "z": 0.14552876855195696
+        }
+      }
+    ]
   },
   {
-    "name":     "PAVILION HEIGHT",
-    "key":      "pavilionHeightView",
-    "position": {
-      "x": 0.10948382249209307,
-      "y": -0.11487387091374723,
-      "z": 1.038663210543583
-    }
+    "PRC": [
+      {
+        "name":     "TABLE",
+        "key":      "tableView",
+        "position": {
+          "x": 0.7366669121084445,
+          "y": 0.33289765997548174,
+          "z": -0.0171726540280889
+        }
+      },
+      {
+        "name":     "RATIO",
+        "key":      "ratioView",
+        "position": {
+          "x": -0.7035071757341377,
+          "y": 0.337213813490522,
+          "z": -0.03671880897078171
+        }
+      },
+      {
+        "name":     "GIRDLE",
+        "key":      "girdleView",
+        "position": {
+          "x": 0.15862029218881576,
+          "y": 0.0075973121474169,
+          "z": 1.22475253893591
+        }
+      },
+      {
+        "name":     "CROWN FACET",
+        "key":      "crownFacetView",
+        "position": {
+          "x": -0.4,
+          "y": 0.1,
+          "z": -1.0
+        }
+      },
+      {
+        "name":     "CROWN HEIGHT",
+        "key":      "crownHeightView",
+        "position": {
+          "x": 0.079,
+          "y": 0.22066156403552537,
+          "z": 1.125096879999456
+        }
+      },
+      {
+        "name":     "DEPTH",
+        "key":      "depthView",
+        "position": {
+          "x": 0.9067551705921767,
+          "y": -0.312943025771035205,
+          "z": -0.2629719383832498
+        }
+      },
+      {
+        "name":     "PAVILION HEIGHT",
+        "key":      "pavilionHeightView",
+        "position": {
+          "x": 0.10948382249209307,
+          "y": -0.32487387091374723,
+          "z": 1.038663210543583
+        }
+      },
+      {
+        "name":     "PAVILION FACET",
+        "key":      "pavilionFacetView",
+        "position": {
+          "x": -0.4104071059634021,
+          "y": -0.7552740884106853,
+          "z": 0.7552876855195696
+        }
+      }
+    ]
   },
   {
-    "name":     "PAVILION FACET",
-    "key":      "pavilionFacetView",
-    "position": {
-      "x": -0.4104071059634021,
-      "y": -0.5552740884106853,
-      "z": 0.14552876855195696
-    }
-  }
+    "HRT": [
+      {
+        "name":     "TABLE",
+        "key":      "tableView",
+        "position": {
+          "x": 0.6366669121084445,
+          "y": 0.44289765997548174,
+          "z": -0.0171726540280889
+        }
+      },
+      {
+        "name":     "RATIO",
+        "key":      "ratioView",
+        "position": {
+          "x": -0.6035071757341377,
+          "y": 0.447213813490522,
+          "z": -0.03671880897078171
+        }
+      },
+      {
+        "name":     "GIRDLE",
+        "key":      "girdleView",
+        "position": {
+          "x": 0.15862029218881576,
+          "y": 0.0075973121474169,
+          "z": 1.22475253893591
+        }
+      },
+      {
+        "name":     "CROWN FACET",
+        "key":      "crownFacetView",
+        "position": {
+          "x": -0.4,
+          "y": 0.1,
+          "z": -1.0
+        }
+      },
+      {
+        "name":     "CROWN HEIGHT",
+        "key":      "crownHeightView",
+        "position": {
+          "x": 0.079,
+          "y": 0.22066156403552537,
+          "z": 1.125096879999456
+        }
+      },
+      {
+        "name":     "DEPTH",
+        "key":      "depthView",
+        "position": {
+          "x": 0.9067551705921767,
+          "y": -0.312943025771035205,
+          "z": -0.2629719383832498
+        }
+      },
+      {
+        "name":     "PAVILION HEIGHT",
+        "key":      "pavilionHeightView",
+        "position": {
+          "x": 0.10948382249209307,
+          "y": -0.32487387091374723,
+          "z": 1.038663210543583
+        }
+      },
+      {
+        "name":     "PAVILION FACET",
+        "key":      "pavilionFacetView",
+        "position": {
+          "x": -0.2104071059634021,
+          "y": -0.5552740884106853,
+          "z": 0.14552876855195696
+        }
+      }
+    ]
+  },
+  {
+    "CUS": [
+      {
+        "name":     "TABLE",
+        "key":      "tableView",
+        "position": {
+          "x": 0.6366669121084445,
+          "y": 0.36289765997548174,
+          "z": -0.0171726540280889
+        }
+      },
+      {
+        "name":     "RATIO",
+        "key":      "ratioView",
+        "position": {
+          "x": -0.6035071757341377,
+          "y": 0.367213813490522,
+          "z": -0.03671880897078171
+        }
+      },
+      {
+        "name":     "GIRDLE",
+        "key":      "girdleView",
+        "position": {
+          "x": 0.15862029218881576,
+          "y": 0.0075973121474169,
+          "z": 1.22475253893591
+        }
+      },
+      {
+        "name":     "CROWN FACET",
+        "key":      "crownFacetView",
+        "position": {
+          "x": -0.4,
+          "y": 0.1,
+          "z": -1.0
+        }
+      },
+      {
+        "name":     "CROWN HEIGHT",
+        "key":      "crownHeightView",
+        "position": {
+          "x": 0.079,
+          "y": 0.22066156403552537,
+          "z": 1.125096879999456
+        }
+      },
+      {
+        "name":     "DEPTH",
+        "key":      "depthView",
+        "position": {
+          "x": 0.9067551705921767,
+          "y": -0.312943025771035205,
+          "z": -0.2629719383832498
+        }
+      },
+      {
+        "name":     "PAVILION HEIGHT",
+        "key":      "pavilionHeightView",
+        "position": {
+          "x": 0.10948382249209307,
+          "y": -0.32487387091374723,
+          "z": 1.038663210543583
+        }
+      },
+      {
+        "name":     "PAVILION FACET",
+        "key":      "pavilionFacetView",
+        "position": {
+          "x": -0.2104071059634021,
+          "y": -0.5552740884106853,
+          "z": 0.14552876855195696
+        }
+      }
+    ]
+  },
+  {
+    "ASC": [
+      {
+        "name":     "TABLE",
+        "key":      "tableView",
+        "position": {
+          "x": 0.7066669121084445,
+          "y": 0.42289765997548174,
+          "z": -0.0171726540280889
+        }
+      },
+      {
+        "name":     "RATIO",
+        "key":      "ratioView",
+        "position": {
+          "x": -0.7035071757341377,
+          "y": 0.427213813490522,
+          "z": -0.03671880897078171
+        }
+      },
+      {
+        "name":     "GIRDLE",
+        "key":      "girdleView",
+        "position": {
+          "x": 0.15862029218881576,
+          "y": 0.0075973121474169,
+          "z": 1.22475253893591
+        }
+      },
+      {
+        "name":     "CROWN FACET",
+        "key":      "crownFacetView",
+        "position": {
+          "x": -0.4,
+          "y": 0.1,
+          "z": -1.0
+        }
+      },
+      {
+        "name":     "CROWN HEIGHT",
+        "key":      "crownHeightView",
+        "position": {
+          "x": 0.079,
+          "y": 0.22066156403552537,
+          "z": 1.125096879999456
+        }
+      },
+      {
+        "name":     "DEPTH",
+        "key":      "depthView",
+        "position": {
+          "x": 0.9067551705921767,
+          "y": -0.312943025771035205,
+          "z": -0.2629719383832498
+        }
+      },
+      {
+        "name":     "PAVILION HEIGHT",
+        "key":      "pavilionHeightView",
+        "position": {
+          "x": 0.10948382249209307,
+          "y": -0.32487387091374723,
+          "z": 1.038663210543583
+        }
+      },
+      {
+        "name":     "PAVILION FACET",
+        "key":      "pavilionFacetView",
+        "position": {
+          "x": -0.5104071059634021,
+          "y": -0.552740884106853,
+          "z": 1.04552876855195696
+        }
+      }
+    ]
+  },
 ]
 
 async function addPlugins(viewer: ViewerApp) {
@@ -893,101 +1597,107 @@ if (!("path" in PointerEvent.prototype)) {
 }
 
 function bindIFrameEvents(viewer: ViewerApp) {
-  window.addEventListener('message', async (event) => {
-    let eventData: any = event.data;
-    console.log("Received event data", eventData);
-    switch (eventData?.action) {
-      case 'DIA_LOAD_DESIGN':
-        LineStandardMaterial.color = new Color(eventData.activeLineColor);
-        disableLineStandardMaterial.color = new Color(eventData.deactivatedLineColor);
-        switch (eventData.shape) {
-          case 'EMR' :
-            await viewer.load("EMR-R0.glb");
-            break;
-          case 'RND':
-            await viewer.load("RND-R0.glb");
-            break;
-          case 'OVA':
-            await viewer.load("OVA-R0.glb");
-            break;
-          case 'PEA':
-            await viewer.load("PEA-R0.glb");
-            break;
-          case 'MAR':
-            await viewer.load("MAR-R0.glb");
-            break;
-          case 'RAD':
-            await viewer.load("RAD-R0.glb");
-            break;
-          case 'PRC':
-            await viewer.load("PRC-R0.glb");
-            break;
-          case 'HRT':
-            await viewer.load("HRT-R0.glb");
-            break;
-          case 'CUS':
-            await viewer.load("CUS-R0.glb");
-            break;
-          case 'ASC':
-            await viewer.load("ASC-R0.glb");
-            break;
-          default:
-            return;
-        }
-        const manager = viewer.getPlugin(AssetManagerPlugin);
-        await manager!.addFromPath(`CameraViews.json?v=1`);
-        const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
-        const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
-        await focusCameraView(cameraViewPlugin!.camViews.find(view => view.name === 'initialView'));
-        viewer.scene.backgroundColor = eventData.canvasBackgroundColor;
-        const sphere = await getSphereObject(viewer);
-        stories.forEach(story => {
-          const newSphere = sphere.clone();
-          const position = new Vector3(story.position.x, story.position.y, story.position.z);
-          createStoryPoint(viewer, newSphere, position, story, focusCameraView)
-        });
-        const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
-        const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
-        setTimeout(() => {
-          if (annotationToggleContainer) {
-            annotationToggleContainer.style.display = 'flex';
-            if(eventData.annotationFontFamily) document.querySelectorAll('.toggle-label').forEach(toggle => {
-              toggle.style.fontFamily = eventData.annotationFontFamily;
-            })
-            document.querySelectorAll('.toggle-switch').forEach(toggle => {
-              toggle.style.backgroundColor = eventData.annotationColor;
-              toggle.addEventListener('click', () => {
-                if (toggle.classList.contains('active')) {
-                  toggle.style.backgroundColor = eventData.annotationColor; // active color
-                } else {
-                  toggle.style.backgroundColor = '#ccc'; // default color
-                }
+  try {
+    window.addEventListener('message', async (event) => {
+      let eventData: any = event.data;
+      console.log("Received event data", eventData);
+      switch (eventData?.action) {
+        case 'DIA_LOAD_DESIGN':
+          LineStandardMaterial.color = new Color(eventData.activeLineColor);
+          disableLineStandardMaterial.color = new Color(eventData.deactivatedLineColor);
+          const shapeKey = eventData.shape as ShapeName;
+          switch (shapeKey) {
+            case 'EMR' :
+              await viewer.load("EMR-R0.glb");
+              break;
+            case 'RND':
+              await viewer.load("RND-R0.glb");
+              break;
+            case 'OVA':
+              await viewer.load("OVA-R0.glb");
+              break;
+            case 'PEA':
+              await viewer.load("PEA-R0.glb");
+              break;
+            case 'MAR':
+              await viewer.load("MAR-R0.glb");
+              break;
+            case 'RAD':
+              await viewer.load("RAD-R0.glb");
+              break;
+            case 'PRC':
+              await viewer.load("PRC-R0.glb");
+              break;
+            case 'HRT':
+              await viewer.load("HRT-R0.glb");
+              break;
+            case 'CUS':
+              await viewer.load("CUS-R0.glb");
+              break;
+            case 'ASC':
+              await viewer.load("ASC-R0.glb");
+              break;
+            default:
+              return;
+          }
+          const manager = viewer.getPlugin(AssetManagerPlugin);
+          await manager!.addFromPath(`CameraViews.json?v=1`);
+          const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
+          const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
+          await focusCameraView(cameraViewPlugin!.camViews.find(view => view.name === 'initialView'));
+          viewer.scene.backgroundColor = eventData.canvasBackgroundColor;
+          const sphere = await getSphereObject(viewer);
+          const stories = shapeStories.find(obj => shapeKey in obj)?.[shapeKey] || [];
+          stories?.forEach(story => {
+            const newSphere = sphere.clone();
+            const position = new Vector3(story.position.x, story.position.y, story.position.z);
+            createStoryPoint(viewer, newSphere, position, story, focusCameraView)
+          });
+          const cameraPlugin = viewer.getPlugin(CameraViewPlugin);
+          const actualAnimationDuration = cameraPlugin?.animDuration || 1000;
+          setTimeout(() => {
+            if (annotationToggleContainer) {
+              annotationToggleContainer.style.display = 'flex';
+              if (eventData.annotationFontFamily) document.querySelectorAll('.toggle-label').forEach(toggle => {
+                toggle.style.fontFamily = eventData.annotationFontFamily;
+              })
+              document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                toggle.style.backgroundColor = eventData.annotationColor;
+                toggle.addEventListener('click', () => {
+                  if (toggle.classList.contains('active')) {
+                    toggle.style.backgroundColor = eventData.annotationColor; // active color
+                  } else {
+                    toggle.style.backgroundColor = '#ccc'; // default color
+                  }
+                });
               });
-            });
-          }
-          window.parent.postMessage({
-            action: 'DIA_DESIGN_LOADED',
-          }, '*')
-        }, actualAnimationDuration);
-        break;
+            }
+            window.parent.postMessage({
+              action: 'DIA_DESIGN_LOADED',
+            }, '*')
+          }, actualAnimationDuration);
+          break;
 
-      case 'DIA_CHANGE_VIEW':
-        if (eventData.view) {
-          if (annotationToggleContainer) {
-            annotationToggleContainer.style.display = 'none';
+        case 'DIA_CHANGE_VIEW':
+          if (eventData.view) {
+            if (annotationToggleContainer) {
+              annotationToggleContainer.style.display = 'none';
+            }
+            canvas!.style.pointerEvents = 'none';
+            const { focusCameraView } = await bindActionButtonEvents(viewer);
+            hideOtherAnnotations();
+            await showAnnotationDetail(viewer, eventData.view, focusCameraView);
           }
-          canvas!.style.pointerEvents = 'none';
-          const { focusCameraView } = await bindActionButtonEvents(viewer);
-          hideOtherAnnotations();
-          await showAnnotationDetail(viewer, eventData.view, focusCameraView);
-        }
-        break;
-      default:
-    }
-  });
+          break;
+        default:
+      }
+    });
 
-  window.parent.postMessage({
-    action: 'DIA_HANDSHAKE',
-    from:   'Child'
-  }, '*');
+    window.parent.postMessage({
+      action: 'DIA_HANDSHAKE',
+      from:   'Child'
+    }, '*');
+  } catch (e) {
+    console.log("ERROR : ", e);
+  }
 }
