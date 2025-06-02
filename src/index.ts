@@ -1608,6 +1608,9 @@ function bindIFrameEvents(viewer: ViewerApp) {
           disableLineStandardMaterial.color = new Color(eventData.deactivatedLineColor);
           closeButton!.style.backgroundColor = eventData.activeLineColor;
           const shapeKey = eventData.shape as ShapeName;
+          document.querySelectorAll('.annotation .name').forEach(nameElement => {
+            nameElement.style.fontFamily = eventData.annotationFontFamily;
+          });
           switch (shapeKey) {
             case 'EMR' :
               await viewer.load("EMR-R0.glb");
