@@ -1094,6 +1094,7 @@ const canvas = document.getElementById("immersive-canvas");
 const annotationToggleContainer = document.querySelector('.annotation-toggle');
 const LineStandardMaterial = new MeshBasicMaterial();
 const disableLineStandardMaterial = new MeshBasicMaterial();
+const closeButton = document.querySelector('.close-button');
 
 async function setupViewer() {
   const viewer = new ViewerApp({
@@ -1217,7 +1218,7 @@ async function setupViewer() {
   });
 
   const cameraViewPlugin = viewer.getPlugin(CameraViewPlugin);
-  const closeButton = document.querySelector('.close-button');
+
   const { focusCameraView } = await bindActionButtonEvents(viewer);
   closeButton!.addEventListener('click', () => {
     window.parent.postMessage({
@@ -1605,6 +1606,7 @@ function bindIFrameEvents(viewer: ViewerApp) {
         case 'DIA_LOAD_DESIGN':
           LineStandardMaterial.color = new Color(eventData.activeLineColor);
           disableLineStandardMaterial.color = new Color(eventData.deactivatedLineColor);
+          closeButton!.style.backgroundColor = eventData.activeLineColor;
           const shapeKey = eventData.shape as ShapeName;
           switch (shapeKey) {
             case 'EMR' :
