@@ -1134,6 +1134,7 @@ async function setupViewer() {
 
   function updateLineVisibility(isVisible) {
     lineObjects.forEach(lineObj => {
+      lineObj.material = LineStandardMaterial;
       lineObj.visible = isVisible;
       lineObj.setDirty();
     });
