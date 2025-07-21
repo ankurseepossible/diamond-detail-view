@@ -1146,7 +1146,6 @@ async function setupViewer() {
   cameraOptions.fov = 1;
   const CamControls: ICameraControls | undefined = viewer.scene.activeCamera.controls;
   CamControls!.enablePan = false;
-  // cameraControls.autoRotate = false;
   CamControls!.minDistance = normalViewDistance.min;
   CamControls!.maxDistance = normalViewDistance.max;
   viewer.scene.activeCamera.setCameraOptions(cameraOptions);
@@ -1188,6 +1187,7 @@ async function setupViewer() {
         model.visible = false;
       }
     });
+    CamControls.autoRotate = true;
   });
 
   // const { focusCameraView, autoRotateEvent } = await bindActionButtonEvents(viewer);
@@ -1499,13 +1499,16 @@ async function bindActionButtonEvents(viewer: ViewerApp) {
     if (!viewToFocus) {
       return;
     }
-    viewToFocus?.focusView();
+    await viewToFocus?.focusView();
     viewer.scene.modelObject.traverse((model) => {
       if (model.type === 'Object3D' && model.name && model.userData.name) {
         rootModel = model;
         return false;
       }
     });
+    window.parent.postMessage({
+      action: 'DIA_DESIGN_LOADED',
+    }, '*')
     if (viewToFocus?.userData?.rotation) {
       await animateObject(viewer, popmotion, rootModel, viewToFocus.userData.rotation, cameraViewPlugin!.animEase, cameraViewPlugin!.animDuration);
     }
